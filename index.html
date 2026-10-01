@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My AI Studio</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,11 +11,17 @@
 
   <header>
     <h1>My AI Studio</h1>
+    <div class="status">● Free</div>
   </header>
 
-  <div class="container">
+  <main class="container">
 
-    <div class="card">
+    <section class="hero">
+      <h2>What do you want to create?</h2>
+      <p>Describe your idea and start building your project.</p>
+    </section>
+
+    <section class="card">
 
       <textarea
         id="prompt"
@@ -30,9 +35,9 @@
         Your result will appear here...
       </div>
 
-    </div>
+    </section>
 
-  </div>
+  </main>
 
   <script src="script.js"></script>
 
