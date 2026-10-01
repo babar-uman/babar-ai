@@ -7,7 +7,7 @@
 body {
   font-family: Arial, sans-serif;
   background: #0b0d10;
-  color: #fff;
+  color: #ffffff;
   min-height: 100vh;
 }
 
@@ -26,11 +26,32 @@ header h1 {
   letter-spacing: 0.5px;
 }
 
+.status {
+  font-size: 13px;
+  color: #8f949d;
+}
+
 .container {
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   padding: 50px 20px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hero h2 {
+  font-size: 38px;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.hero p {
+  color: #8a9099;
+  font-size: 16px;
 }
 
 .card {
@@ -45,7 +66,7 @@ textarea {
   width: 100%;
   min-height: 220px;
   background: #0b0d10;
-  color: #fff;
+  color: #ffffff;
   border: 1px solid #30343b;
   border-radius: 16px;
   padding: 20px;
@@ -69,8 +90,8 @@ button {
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: #fff;
-  color: #000;
+  background: #ffffff;
+  color: #000000;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -98,6 +119,7 @@ button:active {
 }
 
 @media (max-width: 600px) {
+
   header {
     padding: 0 16px;
   }
@@ -106,7 +128,21 @@ button:active {
     padding: 25px 14px;
   }
 
+  .hero h2 {
+    font-size: 28px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
   .card {
     padding: 18px;
     border-radius: 16px;
   }
+
+  textarea {
+    min-height: 190px;
+    font-size: 15px;
+  }
+}
