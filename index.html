@@ -3,98 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My AI Project</title>
+  <title>My AI Studio</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      background: #0f1115;
-      color: white;
-      min-height: 100vh;
-    }
-
-    header {
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid #292d35;
-    }
-
-    header h1 {
-      font-size: 28px;
-    }
-
-    header p {
-      color: #9da3ad;
-      margin-top: 8px;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: #181b21;
-      border: 1px solid #292d35;
-      border-radius: 16px;
-      padding: 25px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 180px;
-      background: #0f1115;
-      color: white;
-      border: 1px solid #343943;
-      border-radius: 12px;
-      padding: 15px;
-      font-size: 16px;
-      resize: vertical;
-      outline: none;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      background: #ffffff;
-      color: #111;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.85;
-    }
-
-    #output {
-      margin-top: 25px;
-      padding: 20px;
-      min-height: 100px;
-      background: #0f1115;
-      border-radius: 12px;
-      border: 1px solid #292d35;
-      color: #d9dde5;
-      white-space: pre-wrap;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
   <header>
-    <h1>My AI Project</h1>
-    <p>Build your ideas with AI</p>
+    <h1>My AI Studio</h1>
   </header>
 
   <div class="container">
@@ -103,7 +20,7 @@
 
       <textarea
         id="prompt"
-        placeholder="Write your idea or prompt here..."></textarea>
+        placeholder="Describe what you want to create..."></textarea>
 
       <button onclick="generateIdea()">
         Generate
@@ -117,22 +34,7 @@
 
   </div>
 
-  <script>
-    function generateIdea() {
-
-      const prompt = document.getElementById("prompt").value;
-      const output = document.getElementById("output");
-
-      if (prompt.trim() === "") {
-        output.innerText = "Please enter your idea first.";
-        return;
-      }
-
-      output.innerText =
-        "Your idea has been received:\n\n" + prompt +
-        "\n\nAI generation system will be connected in the next step.";
-    }
-  </script>
+  <script src="script.js"></script>
 
 </body>
 </html>
