@@ -2,31 +2,78 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Memory Manager Test</title>
+
 </head>
+
 
 <body>
 
   <h1>Memory Manager Test</h1>
 
-  <pre id="output">Testing...</pre>
+  <pre id="output">Loading...</pre>
 
 
   <script src="short-term-memory.js"></script>
+
   <script src="long-term-memory.js"></script>
+
   <script src="memory-manager.js"></script>
 
 
   <script>
 
     const output =
-      document.getElementById("output");
+      document.getElementById(
+        "output"
+      );
 
 
     try {
+
+      if (
+        typeof ShortTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "ShortTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof LongTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "LongTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof MemoryManager !==
+        "function"
+      ) {
+
+        throw new Error(
+          "MemoryManager is not loaded."
+        );
+
+      }
+
 
       const shortTerm =
         new ShortTermMemory(10);
@@ -123,85 +170,54 @@
         status.long_term.total_memories === 1;
 
 
+      if (!passed) {
+
+        throw new Error(
+          "Memory Manager integration test failed."
+        );
+
+      }
+
+
       output.textContent =
 
-        passed
+        "✅ PASS\n\n" +
 
-          ? "✅ PASS\n\n" +
+        JSON.stringify(
 
-            JSON.stringify(
+          {
 
-              {
+            user_message:
+              userMessage,
 
-                user_message:
-                  userMessage,
+            assistant_message:
+              assistantMessage,
 
-                assistant_message:
-                  assistantMessage,
+            recent_conversation:
+              recent,
 
-                recent_conversation:
-                  recent,
+            remembered:
+              remember,
 
-                remembered:
-                  remember,
+            recalled:
+              recall,
 
-                recalled:
-                  recall,
+            knows_memory:
+              knows,
 
-                knows_memory:
-                  knows,
+            search:
+              search,
 
-                search:
-                  search,
+            status:
+              status
 
-                status:
-                  status
+          },
 
-              },
+          null,
 
-              null,
+          2
 
-              2
-
-            )
-
-          : "❌ FAIL\n\n" +
-
-            JSON.stringify(
-
-              {
-
-                user_message:
-                  userMessage,
-
-                assistant_message:
-                  assistantMessage,
-
-                recent_conversation:
-                  recent,
-
-                remembered:
-                  remember,
-
-                recalled:
-                  recall,
-
-                knows_memory:
-                  knows,
-
-                search:
-                  search,
-
-                status:
-                  status
-
-              },
-
-              null,
-
-              2
-
-            );
+        );
 
 
     }
