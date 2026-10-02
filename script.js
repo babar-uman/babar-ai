@@ -1,4 +1,5 @@
 let recognition;
+let finalTranscript = "";
 
 function startVoice() {
   const prompt = document.getElementById("prompt");
@@ -9,19 +10,32 @@ function startVoice() {
 
   if (!SpeechRecognition) {
     output.innerText =
-      "Voice recognition is not supported in this browser.";
+      "❌ Speech Recognition is not supported in this browser.";
     return;
   }
 
+  finalTranscript = "";
+
   recognition = new SpeechRecognition();
 
-  recognition.lang = "ur-PK";
+  recognition.lang = "en-US";
   recognition.continuous = false;
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
 
   recognition.onstart = function () {
-    output.innerText = "🎙️ Listening... بولیں";
+    output.innerText =
+      "🎙️ Listening...\n\nPlease speak now.";
+  };
+
+  recognition.onaudiostart = function () {
+    output.innerText =
+      "🎙️ Microphone active...\n\nPlease speak now.";
+  };
+
+  recognition.onspeechstart = function () {
+    output.innerText =
+      "🗣️ Speech detected...\n\nKeep speaking.";
   };
 
   recognition.onresult = function (event) {
@@ -29,27 +43,55 @@ function startVoice() {
 
     for (let i = event.resultIndex; i < event.results.length; i++) {
       text += event.results[i][0].transcript;
+
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + " ";
+      }
     }
 
-    prompt.value = text;
+    prompt.value = finalTranscript || text;
 
     output.innerText =
-      "🎙️ آپ نے کہا:\n\n" + text;
+      "✅ Voice detected:\n\n" +
+      (finalTranscript || text);
+  };
+
+  recognition.onnomatch = function () {
+    output.innerText =
+      "⚠️ Voice detected, but no words were recognized.";
   };
 
   recognition.onerror = function (event) {
     output.innerText =
-      "Voice error: " + event.error;
+      "❌ Voice error:\n\n" +
+      event.error;
+  };
+
+  recognition.onspeechend = function () {
+    output.innerText =
+      "⏹️ Speech ended. Processing...";
   };
 
   recognition.onend = function () {
-    if (prompt.value.trim() !== "") {
+    if (finalTranscript.trim() !== "") {
+      prompt.value = finalTranscript.trim();
+
       output.innerText =
-        "Voice command received:\n\n" + prompt.value;
+        "✅ Voice command received:\n\n" +
+        finalTranscript.trim();
+    } else {
+      output.innerText =
+        "⚠️ Recognition ended without receiving text.";
     }
   };
 
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (error) {
+    output.innerText =
+      "❌ Could not start voice recognition:\n\n" +
+      error.message;
+  }
 }
 
 
@@ -58,7 +100,8 @@ function generateIdea() {
   const output = document.getElementById("output");
 
   if (prompt.trim() === "") {
-    output.innerText = "Please enter your idea first.";
+    output.innerText =
+      "Please enter your idea first.";
     return;
   }
 
