@@ -1,10 +1,24 @@
 class CommandExecutor {
 
-  constructor(router) {
+  constructor(router, logger = null) {
 
     this.router = router;
 
+    this.logger = logger;
+
     this.history = [];
+
+  }
+
+
+  setLogger(logger) {
+
+    this.logger = logger;
+
+    return {
+      success: true,
+      message: "Execution Logger connected."
+    };
 
   }
 
@@ -70,6 +84,16 @@ class CommandExecutor {
       );
 
 
+      // Send execution record to logger
+      if (this.logger) {
+
+        this.logger.log(
+          executionRecord
+        );
+
+      }
+
+
       return {
 
         success:
@@ -119,6 +143,16 @@ class CommandExecutor {
       );
 
 
+      // Log failed execution
+      if (this.logger) {
+
+        this.logger.log(
+          executionRecord
+        );
+
+      }
+
+
       return {
 
         success: false,
@@ -156,6 +190,7 @@ class CommandExecutor {
 
     this.history = [];
 
+
     return {
 
       success: true,
@@ -176,6 +211,7 @@ class CommandExecutor {
 
     }
 
+
     return this.history[
       this.history.length - 1
     ];
@@ -191,7 +227,10 @@ class CommandExecutor {
         this.history.length,
 
       router_connected:
-        this.router !== null
+        this.router !== null,
+
+      logger_connected:
+        this.logger !== null
 
     };
 
