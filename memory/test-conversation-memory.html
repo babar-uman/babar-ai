@@ -22,13 +22,13 @@
   <pre id="output">Testing...</pre>
 
 
-  <script src="short-term-memory.js?v=2"></script>
+  <script src="short-term-memory.js?v=3"></script>
 
-  <script src="long-term-memory.js?v=2"></script>
+  <script src="long-term-memory.js?v=3"></script>
 
-  <script src="memory-manager.js?v=2"></script>
+  <script src="memory-manager.js?v=3"></script>
 
-  <script src="conversation-memory.js?v=1"></script>
+  <script src="conversation-memory.js?v=2"></script>
 
 
   <script>
@@ -40,6 +40,10 @@
 
 
     try {
+
+      /*
+       * Check required classes
+       */
 
       if (
         typeof ShortTermMemory !==
@@ -89,13 +93,17 @@
       }
 
 
+      /*
+       * Create memory layers
+       */
+
       const shortTerm =
         new ShortTermMemory(20);
 
 
       const longTerm =
         new LongTermMemory(
-          "babar-ai-conversation-test"
+          "babar-ai-conversation-test-v2"
         );
 
 
@@ -115,6 +123,10 @@
         );
 
 
+      /*
+       * Record conversation
+       */
+
       const userMessage =
         conversation.recordUserMessage(
           "My name is Babar."
@@ -133,11 +145,19 @@
         );
 
 
+      /*
+       * Get recent context
+       */
+
       const context =
         conversation.getRecentContext(
           10
         );
 
+
+      /*
+       * Long-term memory
+       */
 
       const remember =
         conversation.rememberImportant(
@@ -159,9 +179,49 @@
         );
 
 
+      /*
+       * Test active state
+       */
+
+      const activeBefore =
+        conversation.isActive();
+
+
+      conversation.setActive(
+        false
+      );
+
+
+      const blockedMessage =
+        conversation.recordUserMessage(
+          "This message should be blocked."
+        );
+
+
+      const inactiveState =
+        conversation.isActive();
+
+
+      conversation.setActive(
+        true
+      );
+
+
+      const activeAfter =
+        conversation.isActive();
+
+
+      /*
+       * Status
+       */
+
       const status =
         conversation.getStatus();
 
+
+      /*
+       * Final validation
+       */
 
       const passed =
 
@@ -181,6 +241,14 @@
 
         search.length === 1 &&
 
+        activeBefore === true &&
+
+        blockedMessage.success === false &&
+
+        inactiveState === false &&
+
+        activeAfter === true &&
+
         status.active === true &&
 
         status.memory_manager_connected === true &&
@@ -191,11 +259,15 @@
       if (!passed) {
 
         throw new Error(
-          "Conversation Memory test failed."
+          "Conversation Memory validation failed."
         );
 
       }
 
+
+      /*
+       * Show successful result
+       */
 
       output.textContent =
 
@@ -214,7 +286,7 @@
             system_message:
               systemMessage,
 
-            context:
+            recent_context:
               context,
 
             remembered:
@@ -225,6 +297,18 @@
 
             search:
               search,
+
+            active_before:
+              activeBefore,
+
+            blocked_message:
+              blockedMessage,
+
+            inactive_state:
+              inactiveState,
+
+            active_after:
+              activeAfter,
 
             status:
               status
