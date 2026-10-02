@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My AI Studio</title>
+
+  <title>Babar AI</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
   <header>
-    <h1>My AI Studio</h1>
+    <h1>Babar AI</h1>
     <div class="status">● Free</div>
   </header>
+
 
   <main class="container">
 
     <section class="hero">
       <h2>What do you want to create?</h2>
-      <p>Describe your idea and start building your project.</p>
+
+      <p>
+        Talk to Babar AI and start building your project.
+      </p>
     </section>
+
 
     <section class="card">
 
@@ -27,9 +35,16 @@
         id="prompt"
         placeholder="Describe what you want to create..."></textarea>
 
+
       <button onclick="generateIdea()">
         Generate
       </button>
+
+
+      <button onclick="startVoice()">
+        🎙️ Voice
+      </button>
+
 
       <div id="output">
         Your result will appear here...
@@ -39,7 +54,9 @@
 
   </main>
 
+
   <script src="script.js"></script>
 
 </body>
+
 </html>
