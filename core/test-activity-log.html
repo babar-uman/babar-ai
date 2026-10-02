@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Activity Log Test</title>
+
+</head>
+
+
+<body>
+
+  <h1>Activity Log Test</h1>
+
+  <pre id="result">Testing...</pre>
+
+
+  <script>
+
+    const result =
+      document.getElementById("result");
+
+
+    // Load Execution Logger
+    const loggerScript =
+      document.createElement("script");
+
+
+    loggerScript.src =
+      "./execution-logger.js?v=" +
+      Date.now();
+
+
+    loggerScript.onload =
+      function () {
+
+
+        // Load Activity Log
+        const activityScript =
+          document.createElement("script");
+
+
+        activityScript.src =
+          "./activity-log.js?v=" +
+          Date.now();
+
+
+        activityScript.onload =
+          function () {
+
+
+            try {
+
+
+              if (
+                typeof window.ExecutionLogger !==
+                "function"
+              ) {
+
+                throw new Error(
+                  "ExecutionLogger is not available."
+                );
+
+              }
+
+
+              if (
+                typeof window.ActivityLog !==
+                "function"
+              ) {
+
+                throw new Error(
+                  "ActivityLog is not available."
+                );
+
+              }
+
+
+              // Create logger
+              const logger =
+                new window.ExecutionLogger();
+
+
+              // Create activity log
+              const activity =
+                new window.ActivityLog(
+                  logger
+                );
+
+
+              // Add successful log
+              logger.log({
+
+                command_id:
+                  "activity-001",
+
+                type:
+                  "system",
+
+                action:
+                  "test",
+
+                target:
+                  "activity-log",
+
+                success:
+                  true,
+
+                permission_required:
+                  false,
+
+                message:
+                  "Successful test."
+
+              });
+
+
+              // Add failed log
+              logger.log({
+
+                command_id:
+                  "activity-002",
+
+                type:
+                  "system",
+
+                action:
+                  "test",
+
+                target:
+                  "activity-log",
+
+                success:
+                  false,
+
+                permission_required:
+                  true,
+
+                message:
+                  "Blocked test."
+
+              });
+
+
+              const all =
+                activity.getAll();
+
+
+              const successful =
+                activity.getSuccessful();
+
+
+              const failed =
+                activity.getFailed();
+
+
+              const permissionRequired =
+                activity.getPermissionRequired();
+
+
+              const summary =
+                activity.getSummary();
+
+
+              const status =
+                activity.getStatus();
+
+
+              const passed =
+
+                all.length === 2 &&
+
+                successful.length === 1 &&
+
+                failed.length === 1 &&
+
+                permissionRequired.length === 1 &&
+
+                summary.total === 2 &&
+
+                summary.successful === 1 &&
+
+                summary.failed === 1 &&
+
+                summary.permission_required === 1 &&
+
+                status.connected === true;
+
+
+              result.textContent =
+                JSON.stringify(
+
+                  {
+
+                    status:
+                      passed
+                        ? "PASS"
+                        : "FAIL",
+
+                    activity_status:
+                      status,
+
+                    summary:
+                      summary,
+
+                    all_logs:
+                      all,
+
+                    successful:
+                      successful,
+
+                    failed:
+                      failed,
+
+                    permission_required:
+                      permissionRequired
+
+                  },
+
+                  null,
+
+                  2
+
+                );
+
+
+            }
+
+
+            catch (error) {
+
+              result.textContent =
+
+                "FAIL\n\n" +
+                error.message;
+
+            }
+
+          };
+
+
+        activityScript.onerror =
+          function () {
+
+            result.textContent =
+              "FAIL\n\n" +
+              "activity-log.js could not be loaded.";
+
+          };
+
+
+        document.head.appendChild(
+          activityScript
+        );
+
+      };
+
+
+    loggerScript.onerror =
+      function () {
+
+        result.textContent =
+          "FAIL\n\n" +
+          "execution-logger.js could not be loaded.";
+
+      };
+
+
+    document.head.appendChild(
+      loggerScript
+    );
+
+  </script>
+
+</body>
+
+</html>
