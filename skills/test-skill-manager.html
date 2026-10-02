@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Skill Manager Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Skill Manager Test</h1>
+
+  <pre id="output">Loading...</pre>
+
+  <script src="skill-manager.js"></script>
+
+  <script>
+
+    const manager = new SkillManager();
+
+    manager.register("demo", {
+
+      name: "Demo Skill",
+
+      execute: async (command) => {
+
+        return {
+          message: "Demo skill executed successfully.",
+          received: command
+        };
+
+      }
+
+    });
+
+    const command = {
+      type: "skill",
+      action: "execute",
+      target: "demo",
+      parameters: {
+        message: "Hello from Babar AI"
+      }
+    };
+
+    manager.execute("demo", command).then((result) => {
+
+      document.getElementById("output").textContent =
+        JSON.stringify(
+          {
+            registered_skills: manager.list(),
+            result: result
+          },
+          null,
+          2
+        );
+
+    });
+
+  </script>
+
+</body>
+
+</html>
