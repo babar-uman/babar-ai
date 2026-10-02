@@ -1,52 +1,32 @@
-class SkillManager {
+class SkillRegistry {
 
-  constructor(registry = null) {
+  constructor() {
     this.skills = new Map();
-    this.registry = registry;
   }
 
 
-  setRegistry(registry) {
+  register(skill) {
 
-    this.registry = registry;
+    if (!skill || !skill.name) {
+      throw new Error("Invalid skill definition.");
+    }
+
+    if (this.skills.has(skill.name)) {
+      throw new Error(`Skill already registered: ${skill.name}`);
+    }
+
+    this.skills.set(skill.name, {
+      name: skill.name,
+      version: skill.version || "1.0.0",
+      description: skill.description || "",
+      category: skill.category || "general",
+      permissions: skill.permissions || [],
+      execute: skill.execute
+    });
 
     return {
       success: true,
-      message: "Skill Registry connected."
-    };
-
-  }
-
-
-  register(name, skill) {
-
-    if (!name || !skill) {
-      throw new Error("Invalid skill.");
-    }
-
-    if (this.skills.has(name)) {
-      throw new Error(`Skill already registered: ${name}`);
-    }
-
-    this.skills.set(name, skill);
-
-    // Also add skill to registry when available
-    if (this.registry && !this.registry.has(name)) {
-
-      this.registry.register({
-        name: name,
-        version: skill.version || "1.0.0",
-        description: skill.description || "",
-        category: skill.category || "general",
-        permissions: skill.permissions || [],
-        execute: skill.execute
-      });
-
-    }
-
-    return {
-      success: true,
-      message: `Skill registered: ${name}`
+      message: `Skill registered: ${skill.name}`
     };
 
   }
@@ -64,10 +44,6 @@ class SkillManager {
     }
 
     this.skills.delete(name);
-
-    if (this.registry && this.registry.has(name)) {
-      this.registry.unregister(name);
-    }
 
     return {
       success: true,
@@ -93,6 +69,13 @@ class SkillManager {
 
   list() {
 
+    return Array.from(this.skills.values());
+
+  }
+
+
+  getNames() {
+
     return Array.from(this.skills.keys());
 
   }
@@ -107,68 +90,42 @@ class SkillManager {
     }
 
     return {
-      name: name,
-      version: skill.version || "1.0.0",
-      description: skill.description || "",
-      category: skill.category || "general",
-      permissions: skill.permissions || []
+      name: skill.name,
+      version: skill.version,
+      description: skill.description,
+      category: skill.category,
+      permissions: skill.permissions
     };
 
   }
 
 
-  async execute(name, command) {
+  clear() {
 
-    const skill = this.get(name);
+    this.skills.clear();
 
-    if (!skill) {
+    return {
+      success: true,
+      message: "Skill registry cleared."
+    };
 
-      return {
-        success: false,
-        message: `Skill not found: ${name}`
-      };
+  }
 
-    }
 
-    if (typeof skill.execute !== "function") {
+  count() {
 
-      return {
-        success: false,
-        message: `Skill has no execute method: ${name}`
-      };
+    return this.skills.size;
 
-    }
+  }
 
-    try {
 
-      const result = await skill.execute(command);
+  getStatus() {
 
-      // Preserve skill failures.
-      // Do not convert success:false into success:true.
-      if (result && result.success === false) {
-
-        return {
-          ...result,
-          skill: name
-        };
-
-      }
-
-      return {
-        success: true,
-        skill: name,
-        data: result
-      };
-
-    } catch (error) {
-
-      return {
-        success: false,
-        skill: name,
-        error: error.message
-      };
-
-    }
+    return {
+      success: true,
+      count: this.skills.size,
+      skills: this.getNames()
+    };
 
   }
 
@@ -177,11 +134,11 @@ class SkillManager {
 
 // Browser / Web version
 if (typeof window !== "undefined") {
-  window.SkillManager = SkillManager;
+  window.SkillRegistry = SkillRegistry;
 }
 
 
 // Node.js version
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = SkillManager;
+  module.exports = SkillRegistry;
 }
