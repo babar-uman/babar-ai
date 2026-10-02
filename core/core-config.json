@@ -1,0 +1,48 @@
+{
+  "name": "Babar AI",
+  "version": "0.1.0",
+  "mode": "development",
+
+  "language": {
+    "default": "en",
+    "supported": [
+      "en",
+      "ur"
+    ],
+    "auto_detect": true
+  },
+
+  "voice": {
+    "enabled": true,
+    "speech_recognition": true,
+    "text_to_speech": true
+  },
+
+  "memory": {
+    "enabled": true,
+    "short_term": true,
+    "long_term": true,
+    "user_control": true
+  },
+
+  "skills": {
+    "enabled": true,
+    "auto_load": true
+  },
+
+  "agents": {
+    "pc": true,
+    "android": true,
+    "browser": true
+  },
+
+  "security": {
+    "permissions": true,
+    "confirmation_required": true
+  },
+
+  "updates": {
+    "enabled": true,
+    "automatic": false
+  }
+}
