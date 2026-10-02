@@ -84,6 +84,14 @@ class SkillManager {
   }
 }
 
+
+// Browser / Web version
+if (typeof window !== "undefined") {
+  window.SkillManager = SkillManager;
+}
+
+
+// Node.js version
 if (typeof module !== "undefined" && module.exports) {
   module.exports = SkillManager;
 }
