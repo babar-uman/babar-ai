@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Manager Load Test</title>
+</head>
+
+<body>
+
+  <h1>Memory Manager Load Test</h1>
+
+  <pre id="output">Loading...</pre>
+
+  <script src="memory-manager.js"></script>
+
+  <script>
+
+    const output =
+      document.getElementById("output");
+
+
+    if (typeof MemoryManager === "function") {
+
+      output.textContent =
+        "✅ PASS\n\n" +
+        "MemoryManager loaded successfully.";
+
+    } else {
+
+      output.textContent =
+        "❌ FAIL\n\n" +
+        "MemoryManager was not loaded.";
+
+    }
+
+  </script>
+
+</body>
+
+</html>
