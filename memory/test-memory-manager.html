@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Memory Manager Test</title>
+</head>
+
+<body>
+
+  <h1>Memory Manager Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="short-term-memory.js"></script>
+  <script src="long-term-memory.js"></script>
+  <script src="memory-manager.js"></script>
+
+
+  <script>
+
+    const output =
+      document.getElementById("output");
+
+
+    try {
+
+      const shortTerm =
+        new ShortTermMemory(10);
+
+
+      const longTerm =
+        new LongTermMemory(
+          "babar-ai-manager-test"
+        );
+
+
+      const manager =
+        new MemoryManager(
+          shortTerm,
+          longTerm
+        );
+
+
+      longTerm.clear();
+
+
+      const userMessage =
+        manager.addUserMessage(
+          "Hello Babar AI"
+        );
+
+
+      const assistantMessage =
+        manager.addAssistantMessage(
+          "Hello Babar!"
+        );
+
+
+      const recent =
+        manager.getRecentConversation(
+          10
+        );
+
+
+      const remember =
+        manager.remember(
+          "user_name",
+          "Babar",
+          "personal"
+        );
+
+
+      const recall =
+        manager.recall(
+          "user_name"
+        );
+
+
+      const knows =
+        manager.knows(
+          "user_name"
+        );
+
+
+      const search =
+        manager.searchMemory(
+          "Babar"
+        );
+
+
+      const status =
+        manager.getStatus();
+
+
+      const passed =
+
+        userMessage.success === true &&
+
+        assistantMessage.success === true &&
+
+        recent.length === 2 &&
+
+        remember.success === true &&
+
+        recall !== null &&
+
+        recall.value === "Babar" &&
+
+        knows === true &&
+
+        search.length === 1 &&
+
+        status.short_term_connected === true &&
+
+        status.long_term_connected === true &&
+
+        status.short_term.total_messages === 2 &&
+
+        status.long_term.total_memories === 1;
+
+
+      output.textContent =
+
+        passed
+
+          ? "✅ PASS\n\n" +
+
+            JSON.stringify(
+
+              {
+
+                user_message:
+                  userMessage,
+
+                assistant_message:
+                  assistantMessage,
+
+                recent_conversation:
+                  recent,
+
+                remembered:
+                  remember,
+
+                recalled:
+                  recall,
+
+                knows_memory:
+                  knows,
+
+                search:
+                  search,
+
+                status:
+                  status
+
+              },
+
+              null,
+
+              2
+
+            )
+
+          : "❌ FAIL\n\n" +
+
+            JSON.stringify(
+
+              {
+
+                user_message:
+                  userMessage,
+
+                assistant_message:
+                  assistantMessage,
+
+                recent_conversation:
+                  recent,
+
+                remembered:
+                  remember,
+
+                recalled:
+                  recall,
+
+                knows_memory:
+                  knows,
+
+                search:
+                  search,
+
+                status:
+                  status
+
+              },
+
+              null,
+
+              2
+
+            );
+
+
+    }
+
+    catch (error) {
+
+      output.textContent =
+
+        "❌ ERROR\n\n" +
+
+        error.message;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
