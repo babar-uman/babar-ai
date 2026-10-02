@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Core Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Core Test</h1>
+
+  <pre id="output">Loading...</pre>
+
+  <script src="babar-core.js"></script>
+
+  <script>
+
+    const core = new BabarCore({
+      name: "Babar AI",
+      version: "0.1.0"
+    });
+
+    const command = core.createCommand(
+      "chat",
+      "test",
+      "core",
+      {
+        message: "Hello Babar AI"
+      }
+    );
+
+    document.getElementById("output").textContent =
+      JSON.stringify(
+        {
+          status: core.getStatus(),
+          command: command
+        },
+        null,
+        2
+      );
+
+  </script>
+
+</body>
+</html>
