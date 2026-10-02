@@ -17,16 +17,14 @@ class CommandExecutor {
 
         success: false,
 
-        message:
-          "Invalid command."
+        message: "Invalid command."
 
       };
 
     }
 
 
-    const startTime =
-      Date.now();
+    const startTime = Date.now();
 
 
     try {
@@ -100,4 +98,121 @@ class CommandExecutor {
           command.action || null,
 
         target:
-          command.target ||
+          command.target || null,
+
+        success: false,
+
+        error:
+          error.message,
+
+        timestamp:
+          new Date().toISOString(),
+
+        duration_ms:
+          Date.now() - startTime
+
+      };
+
+
+      this.history.push(
+        executionRecord
+      );
+
+
+      return {
+
+        success: false,
+
+        result: {
+
+          success: false,
+
+          message:
+            "Command execution failed.",
+
+          error:
+            error.message
+
+        },
+
+        execution:
+          executionRecord
+
+      };
+
+    }
+
+  }
+
+
+  getHistory() {
+
+    return [...this.history];
+
+  }
+
+
+  clearHistory() {
+
+    this.history = [];
+
+    return {
+
+      success: true,
+
+      message:
+        "Execution history cleared."
+
+    };
+
+  }
+
+
+  getLastExecution() {
+
+    if (this.history.length === 0) {
+
+      return null;
+
+    }
+
+    return this.history[
+      this.history.length - 1
+    ];
+
+  }
+
+
+  getStatus() {
+
+    return {
+
+      history_count:
+        this.history.length,
+
+      router_connected:
+        this.router !== null
+
+    };
+
+  }
+
+}
+
+
+// Browser / Web version
+if (typeof window !== "undefined") {
+
+  window.CommandExecutor =
+    CommandExecutor;
+
+}
+
+
+// Node.js version
+if (typeof module !== "undefined" && module.exports) {
+
+  module.exports =
+    CommandExecutor;
+
+}
