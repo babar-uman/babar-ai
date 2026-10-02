@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Babar Core Memory Test</title>
+
+</head>
+
+
+<body>
+
+  <h1>Babar Core + Memory Manager Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="../memory/short-term-memory.js"></script>
+
+  <script src="../memory/long-term-memory.js"></script>
+
+  <script src="../memory/memory-manager.js"></script>
+
+  <script src="babar-core.js"></script>
+
+
+  <script>
+
+    const output =
+      document.getElementById(
+        "output"
+      );
+
+
+    try {
+
+      if (
+        typeof ShortTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "ShortTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof LongTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "LongTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof MemoryManager !==
+        "function"
+      ) {
+
+        throw new Error(
+          "MemoryManager is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof BabarCore !==
+        "function"
+      ) {
+
+        throw new Error(
+          "BabarCore is not loaded."
+        );
+
+      }
+
+
+      const shortTerm =
+        new ShortTermMemory(10);
+
+
+      const longTerm =
+        new LongTermMemory(
+          "babar-ai-core-memory-test"
+        );
+
+
+      longTerm.clear();
+
+
+      const memoryManager =
+        new MemoryManager(
+          shortTerm,
+          longTerm
+        );
+
+
+      const core =
+        new BabarCore(
+
+          {
+            name:
+              "Babar AI",
+
+            version:
+              "0.1.0",
+
+            memory:
+              {
+                enabled:
+                  true
+              }
+
+          },
+
+          memoryManager
+
+        );
+
+
+      const remember =
+        core.remember(
+          "user_name",
+          "Babar",
+          "personal"
+        );
+
+
+      const recall =
+        core.recall(
+          "user_name"
+        );
+
+
+      const knows =
+        core.knows(
+          "user_name"
+        );
+
+
+      const userMessage =
+        core.addUserMessage(
+          "Hello Babar AI"
+        );
+
+
+      const assistantMessage =
+        core.addAssistantMessage(
+          "Hello Babar!"
+        );
+
+
+      const recent =
+        core.getRecentConversation(
+          10
+        );
+
+
+      const memoryStatus =
+        core.getMemoryStatus();
+
+
+      const coreStatus =
+        core.getStatus();
+
+
+      const passed =
+
+        remember.success === true &&
+
+        recall !== null &&
+
+        recall.value === "Babar" &&
+
+        knows === true &&
+
+        userMessage.success === true &&
+
+        assistantMessage.success === true &&
+
+        recent.length === 2 &&
+
+        memoryStatus.connected === true &&
+
+        coreStatus.memory_manager_connected === true;
+
+
+      if (!passed) {
+
+        throw new Error(
+          "Core + Memory integration test failed."
+        );
+
+      }
+
+
+      output.textContent =
+
+        "✅ PASS\n\n" +
+
+        JSON.stringify(
+
+          {
+
+            remember:
+              remember,
+
+            recall:
+              recall,
+
+            knows:
+              knows,
+
+            user_message:
+              userMessage,
+
+            assistant_message:
+              assistantMessage,
+
+            recent_conversation:
+              recent,
+
+            memory_status:
+              memoryStatus,
+
+            core_status:
+              coreStatus
+
+          },
+
+          null,
+
+          2
+
+        );
+
+
+    }
+
+    catch (error) {
+
+      output.textContent =
+
+        "❌ ERROR\n\n" +
+
+        error.message;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
