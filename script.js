@@ -3,38 +3,143 @@ let finalTranscript = "";
 
 
 // ========================================
-// Babar AI Core Connection
+// Babar AI System
 // ========================================
 
 let babarCore = null;
+let shortTermMemory = null;
+let longTermMemory = null;
+let memoryManager = null;
+let conversationMemory = null;
+let skillRegistry = null;
+let skillManager = null;
+let permissionManager = null;
+let commandRouter = null;
+let executionLogger = null;
+let commandExecutor = null;
+let activityLog = null;
 
+
+// ========================================
+// Initialize Babar AI
+// ========================================
 
 function initializeBabarAI() {
 
   try {
 
-    // BabarCore should already be loaded on the page.
-    if (typeof BabarCore === "undefined") {
+    // ------------------------------------
+    // Memory
+    // ------------------------------------
 
-      console.warn(
-        "BabarCore is not loaded yet."
+    shortTermMemory =
+      new ShortTermMemory();
+
+    longTermMemory =
+      new LongTermMemory();
+
+    memoryManager =
+      new MemoryManager(
+        shortTermMemory,
+        longTermMemory
       );
 
-      return false;
+    conversationMemory =
+      new ConversationMemory(
+        memoryManager
+      );
 
-    }
+
+    // ------------------------------------
+    // Skills
+    // ------------------------------------
+
+    skillRegistry =
+      new SkillRegistry();
+
+    skillManager =
+      new SkillManager(
+        skillRegistry
+      );
 
 
-    babarCore = new BabarCore();
+    // ------------------------------------
+    // Permission
+    // ------------------------------------
+
+    permissionManager =
+      new PermissionManager();
+
+
+    // ------------------------------------
+    // Core
+    // ------------------------------------
+
+    babarCore =
+      new BabarCore(
+        {},
+        memoryManager,
+        conversationMemory
+      );
+
+
+    // ------------------------------------
+    // Router
+    // ------------------------------------
+
+    commandRouter =
+      new CommandRouter(
+        babarCore,
+        skillManager,
+        permissionManager
+      );
+
+
+    // ------------------------------------
+    // Execution Logger
+    // ------------------------------------
+
+    executionLogger =
+      new ExecutionLogger();
+
+
+    // ------------------------------------
+    // Command Executor
+    // ------------------------------------
+
+    commandExecutor =
+      new CommandExecutor(
+        commandRouter,
+        executionLogger
+      );
+
+
+    // ------------------------------------
+    // Activity Log
+    // ------------------------------------
+
+    activityLog =
+      new ActivityLog(
+        executionLogger
+      );
+
+
+    console.log(
+      "Babar AI initialized successfully."
+    );
+
 
     return true;
 
   } catch (error) {
 
     console.error(
-      "Failed to initialize Babar AI:",
+      "Babar AI initialization failed:",
       error
     );
+
+
+    babarCore = null;
 
     return false;
 
@@ -43,12 +148,40 @@ function initializeBabarAI() {
 }
 
 
-// Initialize when page loads.
+// ========================================
+// Page Initialization
+// ========================================
+
 document.addEventListener(
   "DOMContentLoaded",
   function () {
 
-    initializeBabarAI();
+    const initialized =
+      initializeBabarAI();
+
+
+    const output =
+      document.getElementById("output");
+
+
+    if (!output) {
+      return;
+    }
+
+
+    if (initialized) {
+
+      output.innerText =
+        "Babar AI is ready.\n\n" +
+        "Enter a command or use Voice.";
+
+    } else {
+
+      output.innerText =
+        "⚠️ Babar AI could not initialize.\n\n" +
+        "Please check the Core files.";
+
+    }
 
   }
 );
@@ -89,20 +222,28 @@ function startVoice() {
     new SpeechRecognition();
 
 
-  recognition.lang = "en-US";
+  recognition.lang =
+    "en-US";
 
-  recognition.continuous = false;
 
-  recognition.interimResults = true;
+  recognition.continuous =
+    false;
 
-  recognition.maxAlternatives = 1;
+
+  recognition.interimResults =
+    true;
+
+
+  recognition.maxAlternatives =
+    1;
 
 
   recognition.onstart =
     function () {
 
       output.innerText =
-        "🎙️ Listening...\n\nPlease speak now.";
+        "🎙️ Listening...\n\n" +
+        "Please speak now.";
 
     };
 
@@ -111,7 +252,8 @@ function startVoice() {
     function () {
 
       output.innerText =
-        "🎙️ Microphone active...\n\nPlease speak now.";
+        "🎙️ Microphone active...\n\n" +
+        "Please speak now.";
 
     };
 
@@ -120,7 +262,8 @@ function startVoice() {
     function () {
 
       output.innerText =
-        "🗣️ Speech detected...\n\nKeep speaking.";
+        "🗣️ Speech detected...\n\n" +
+        "Keep speaking.";
 
     };
 
@@ -188,7 +331,7 @@ function startVoice() {
     function () {
 
       output.innerText =
-        "⏹️ Speech ended. Processing...";
+        "⏹️ Speech ended.";
 
     };
 
@@ -234,7 +377,7 @@ function startVoice() {
 
 
 // ========================================
-// Generate / Process Command
+// Generate / Create Command
 // ========================================
 
 async function generateIdea() {
@@ -260,66 +403,90 @@ async function generateIdea() {
   }
 
 
+  // Make sure Babar AI is initialized.
+  if (!babarCore) {
+
+    const initialized =
+      initializeBabarAI();
+
+
+    if (!initialized) {
+
+      output.innerText =
+        "❌ Babar AI could not initialize.\n\n" +
+        "Please check the Core files.";
+
+      return;
+
+    }
+
+  }
+
+
   output.innerText =
-    "Babar AI is processing your request...\n\n" +
-    "Your command:\n" +
-    prompt;
+    "Babar AI is processing your request...";
 
 
   try {
 
-    // Make sure BabarCore is available.
-    if (!babarCore) {
+    // ------------------------------------
+    // Save user message
+    // ------------------------------------
 
-      const initialized =
-        initializeBabarAI();
+    const memoryResult =
+      babarCore.addUserMessage(
+        prompt
+      );
 
 
-      if (!initialized) {
+    if (
+      memoryResult &&
+      memoryResult.success === false
+    ) {
 
-        output.innerText =
-          "⚠️ Babar AI Core is not connected yet.\n\n" +
-          "The interface is working, but the Core system " +
-          "has not been loaded by index.html.";
-
-        return;
-
-      }
+      console.warn(
+        "Could not save user message:",
+        memoryResult.message
+      );
 
     }
 
 
-    // Create a command through BabarCore.
+    // ------------------------------------
+    // Create proper Babar AI command
+    // ------------------------------------
+
     const command =
       babarCore.createCommand(
         "conversation",
+        "process",
+        "babar-ai",
         {
-          prompt: prompt
+          prompt:
+            prompt
         }
       );
 
 
-    // Store the user's request in memory.
-    if (
-      typeof babarCore.addConversationMessage ===
-      "function"
-    ) {
-
-      babarCore.addConversationMessage(
-        "user",
-        prompt
-      );
-
-    }
-
+    // ------------------------------------
+    // Show command information
+    // ------------------------------------
 
     output.innerText =
-      "✅ Command created successfully.\n\n" +
-      "Babar AI received:\n" +
+      "✅ Babar AI received your request.\n\n" +
+
+      "Command:\n" +
       prompt +
       "\n\n" +
+
       "Command ID:\n" +
-      (command.id || "N/A");
+      command.id;
+
+
+    console.log(
+      "Babar AI Command:",
+      command
+    );
 
 
   } catch (error) {
