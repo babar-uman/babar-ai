@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Manager Registry Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Manager + Registry Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="./skill-registry.js"></script>
+  <script src="./skill-manager.js"></script>
+
+
+  <script>
+
+    const output = document.getElementById("output");
+
+    try {
+
+      // Create Registry
+      const registry = new SkillRegistry();
+
+
+      // Create Manager and connect Registry
+      const manager = new SkillManager(registry);
+
+
+      // Register demo skill
+      manager.register("demo", {
+
+        version: "1.0.0",
+
+        description:
+          "Demo skill for testing Manager and Registry integration.",
+
+        category: "test",
+
+        permissions: [],
+
+        execute: async (command) => {
+
+          return {
+            message: "Demo skill executed successfully.",
+            received: command
+          };
+
+        }
+
+      });
+
+
+      // Create test command
+      const command = {
+
+        type: "skill",
+
+        action: "execute",
+
+        target: "demo",
+
+        parameters: {
+          message: "Hello from Babar AI"
+        }
+
+      };
+
+
+      // Execute skill
+      manager.execute("demo", command).then((result) => {
+
+        output.textContent =
+          JSON.stringify(
+            {
+
+              status: "PASS",
+
+              manager_skills:
+                manager.list(),
+
+              registry_skills:
+                registry.getNames(),
+
+              skill_info:
+                manager.getInfo("demo"),
+
+              registry_info:
+                registry.getInfo("demo"),
+
+              execution:
+                result
+
+            },
+            null,
+            2
+          );
+
+      });
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+          {
+            status: "FAIL",
+            error: error.message
+          },
+          null,
+          2
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
