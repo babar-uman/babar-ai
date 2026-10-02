@@ -61,4 +61,29 @@ class SkillManager {
     if (typeof skill.execute !== "function") {
       return {
         success: false,
-        message: `Skill has no execute method:
+        message: `Skill has no execute method: ${name}`
+      };
+    }
+
+    try {
+      const result = await skill.execute(command);
+
+      return {
+        success: true,
+        skill: name,
+        data: result
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        skill: name,
+        error: error.message
+      };
+    }
+  }
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = SkillManager;
+}
