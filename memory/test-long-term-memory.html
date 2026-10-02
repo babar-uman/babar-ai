@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Long Term Memory Test</title>
+</head>
+
+<body>
+
+  <h1>Long Term Memory Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="long-term-memory.js"></script>
+
+  <script>
+
+    const output =
+      document.getElementById("output");
+
+
+    try {
+
+      const memory =
+        new LongTermMemory(
+          "babar-ai-test-memory"
+        );
+
+
+      memory.clear();
+
+
+      const addResult =
+        memory.add(
+          "user_name",
+          "Babar",
+          "personal"
+        );
+
+
+      const getResult =
+        memory.get(
+          "user_name"
+        );
+
+
+      const searchResult =
+        memory.search(
+          "Babar"
+        );
+
+
+      const categoryResult =
+        memory.getByCategory(
+          "personal"
+        );
+
+
+      const status =
+        memory.getStatus();
+
+
+      const passed =
+        addResult.success === true &&
+
+        getResult !== null &&
+
+        getResult.value === "Babar" &&
+
+        searchResult.length === 1 &&
+
+        categoryResult.length === 1 &&
+
+        status.total_memories === 1;
+
+
+      output.textContent =
+        passed
+
+          ? "✅ PASS\n\n" +
+            JSON.stringify(
+              {
+                add: addResult,
+                memory: getResult,
+                search: searchResult,
+                category: categoryResult,
+                status: status
+              },
+              null,
+              2
+            )
+
+          : "❌ FAIL\n\n" +
+            JSON.stringify(
+              {
+                add: addResult,
+                memory: getResult,
+                search: searchResult,
+                category: categoryResult,
+                status: status
+              },
+              null,
+              2
+            );
+
+
+    } catch (error) {
+
+      output.textContent =
+        "❌ ERROR\n\n" +
+        error.message;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
