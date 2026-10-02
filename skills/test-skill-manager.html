@@ -13,7 +13,7 @@
 
   <pre id="output">Loading...</pre>
 
-  <script src="skill-manager.js"></script>
+  <script src="./skill-manager.js"></script>
 
   <script>
 
@@ -55,10 +55,14 @@
           2
         );
 
+    }).catch((error) => {
+
+      document.getElementById("output").textContent =
+        "❌ Test Error:\n\n" + error.message;
+
     });
 
   </script>
 
 </body>
-
 </html>
