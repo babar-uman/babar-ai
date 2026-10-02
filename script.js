@@ -21,6 +21,13 @@ let activityLog = null;
 
 
 // ========================================
+// Permission Confirmation State
+// ========================================
+
+let pendingCommand = null;
+
+
+// ========================================
 // Initialize Babar AI
 // ========================================
 
@@ -378,7 +385,43 @@ function startVoice() {
 
 
 // ========================================
-// Generate / Execute Command
+// Create Babar AI Command
+// ========================================
+
+function createBabarCommand(prompt) {
+
+  return babarCore.createCommand(
+    "conversation",
+    "process",
+    "babar-ai",
+    {
+      prompt:
+        prompt
+    }
+  );
+
+}
+
+
+// ========================================
+// Execute Babar AI Command
+// ========================================
+
+async function executeBabarCommand(
+  command,
+  confirmed = false
+) {
+
+  return await commandExecutor.execute(
+    command,
+    confirmed
+  );
+
+}
+
+
+// ========================================
+// Generate / Confirm / Execute
 // ========================================
 
 async function generateIdea() {
@@ -434,6 +477,105 @@ async function generateIdea() {
   try {
 
     // ------------------------------------
+    // Confirm pending command
+    // ------------------------------------
+
+    if (pendingCommand) {
+
+      const pendingPrompt =
+        pendingCommand.parameters &&
+        pendingCommand.parameters.prompt
+          ? pendingCommand.parameters.prompt
+          : "";
+
+
+      if (
+        prompt !== pendingPrompt
+      ) {
+
+        output.innerText =
+          "⚠️ A different command was entered.\n\n" +
+          "Please confirm the pending command first.";
+
+        return;
+
+      }
+
+
+      output.innerText =
+        "🔐 Permission confirmed.\n\n" +
+        "Executing command...";
+
+
+      const confirmedCommand =
+        pendingCommand;
+
+
+      pendingCommand =
+        null;
+
+
+      const executionResult =
+        await executeBabarCommand(
+          confirmedCommand,
+          true
+        );
+
+
+      console.log(
+        "Confirmed execution result:",
+        executionResult
+      );
+
+
+      if (
+        !executionResult ||
+        executionResult.success !== true
+      ) {
+
+        const message =
+          executionResult &&
+          executionResult.result &&
+          executionResult.result.message
+            ? executionResult.result.message
+            : "Command execution failed.";
+
+
+        output.innerText =
+          "❌ Command failed.\n\n" +
+          message;
+
+        return;
+
+      }
+
+
+      babarCore.addAssistantMessage(
+        "Command executed successfully.",
+        {
+          command_id:
+            confirmedCommand.id
+        }
+      );
+
+
+      output.innerText =
+        "✅ Babar AI command executed successfully.\n\n" +
+
+        "Command:\n" +
+        pendingPrompt +
+        "\n\n" +
+
+        "Command ID:\n" +
+        confirmedCommand.id;
+
+
+      return;
+
+    }
+
+
+    // ------------------------------------
     // Save user message
     // ------------------------------------
 
@@ -457,18 +599,12 @@ async function generateIdea() {
 
 
     // ------------------------------------
-    // Create Babar AI command
+    // Create command
     // ------------------------------------
 
     const command =
-      babarCore.createCommand(
-        "conversation",
-        "process",
-        "babar-ai",
-        {
-          prompt:
-            prompt
-        }
+      createBabarCommand(
+        prompt
       );
 
 
@@ -479,11 +615,11 @@ async function generateIdea() {
 
 
     // ------------------------------------
-    // Execute command
+    // First execution attempt
     // ------------------------------------
 
     const executionResult =
-      await commandExecutor.execute(
+      await executeBabarCommand(
         command,
         false
       );
@@ -505,16 +641,18 @@ async function generateIdea() {
       executionResult.result.permission_required
     ) {
 
+      pendingCommand =
+        command;
+
+
       output.innerText =
         "🔐 Permission required.\n\n" +
 
-        "Babar AI wants to execute:\n" +
-        command.type +
-        "." +
-        command.action +
+        "Command:\n" +
+        prompt +
         "\n\n" +
 
-        "Press Generate again to confirm this command.";
+        "Press Generate again to confirm.";
 
       return;
 
@@ -551,21 +689,6 @@ async function generateIdea() {
     // Successful execution
     // ------------------------------------
 
-    output.innerText =
-      "✅ Babar AI command executed.\n\n" +
-
-      "Command:\n" +
-      prompt +
-      "\n\n" +
-
-      "Command ID:\n" +
-      command.id;
-
-
-    // ------------------------------------
-    // Save assistant response
-    // ------------------------------------
-
     babarCore.addAssistantMessage(
       "Command executed successfully.",
       {
@@ -575,12 +698,27 @@ async function generateIdea() {
     );
 
 
+    output.innerText =
+      "✅ Babar AI command executed successfully.\n\n" +
+
+      "Command:\n" +
+      prompt +
+      "\n\n" +
+
+      "Command ID:\n" +
+      command.id;
+
+
   } catch (error) {
 
     console.error(
       "Babar AI command error:",
       error
     );
+
+
+    pendingCommand =
+      null;
 
 
     output.innerText =
