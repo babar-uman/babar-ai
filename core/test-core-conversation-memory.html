@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Babar Core Conversation Memory Test</title>
+
+</head>
+
+
+<body>
+
+  <h1>Babar Core Conversation Memory Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="../memory/short-term-memory.js?v=4"></script>
+
+  <script src="../memory/long-term-memory.js?v=4"></script>
+
+  <script src="../memory/memory-manager.js?v=4"></script>
+
+  <script src="../memory/conversation-memory.js?v=3"></script>
+
+  <script src="babar-core.js?v=2"></script>
+
+
+  <script>
+
+    const output =
+      document.getElementById(
+        "output"
+      );
+
+
+    try {
+
+      /*
+       * Check required classes
+       */
+
+      if (
+        typeof ShortTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "ShortTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof LongTermMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "LongTermMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof MemoryManager !==
+        "function"
+      ) {
+
+        throw new Error(
+          "MemoryManager is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof ConversationMemory !==
+        "function"
+      ) {
+
+        throw new Error(
+          "ConversationMemory is not loaded."
+        );
+
+      }
+
+
+      if (
+        typeof BabarCore !==
+        "function"
+      ) {
+
+        throw new Error(
+          "BabarCore is not loaded."
+        );
+
+      }
+
+
+      /*
+       * Create memory layers
+       */
+
+      const shortTerm =
+        new ShortTermMemory(20);
+
+
+      const longTerm =
+        new LongTermMemory(
+          "babar-ai-core-conversation-test"
+        );
+
+
+      longTerm.clear();
+
+
+      const memoryManager =
+        new MemoryManager(
+          shortTerm,
+          longTerm
+        );
+
+
+      const conversationMemory =
+        new ConversationMemory(
+          memoryManager
+        );
+
+
+      /*
+       * Create Babar Core
+       */
+
+      const core =
+        new BabarCore(
+
+          {
+
+            name:
+              "Babar AI",
+
+            version:
+              "0.1.0",
+
+            memory: {
+
+              enabled:
+                true
+
+            }
+
+          },
+
+          memoryManager,
+
+          conversationMemory
+
+        );
+
+
+      /*
+       * Test connection status
+       */
+
+      const statusBefore =
+        core.getStatus();
+
+
+      const conversationStatus =
+        core.getConversationMemoryStatus();
+
+
+      /*
+       * Test conversation messages
+       */
+
+      const userMessage =
+        core.addUserMessage(
+          "My name is Babar."
+        );
+
+
+      const assistantMessage =
+        core.addAssistantMessage(
+          "Hello Babar."
+        );
+
+
+      const systemMessage =
+        core.addSystemMessage(
+          "Conversation initialized."
+        );
+
+
+      /*
+       * Get conversation
+       */
+
+      const conversation =
+        core.getRecentConversation(
+          10
+        );
+
+
+      /*
+       * Test important memory
+       */
+
+      const remember =
+        core.rememberImportant(
+          "user_name",
+          "Babar",
+          "personal"
+        );
+
+
+      const recall =
+        core.recallImportant(
+          "user_name"
+        );
+
+
+      const search =
+        core.searchImportant(
+          "Babar"
+        );
+
+
+      /*
+       * Memory status
+       */
+
+      const memoryStatus =
+        core.getMemoryStatus();
+
+
+      /*
+       * Final status
+       */
+
+      const finalStatus =
+        core.getStatus();
+
+
+      /*
+       * Validation
+       */
+
+      const passed =
+
+        statusBefore
+          .memory_manager_connected === true &&
+
+        statusBefore
+          .conversation_memory_connected === true &&
+
+        conversationStatus
+          .connected === true &&
+
+        userMessage.success === true &&
+
+        assistantMessage.success === true &&
+
+        systemMessage.success === true &&
+
+        conversation.length === 3 &&
+
+        remember.success === true &&
+
+        recall !== null &&
+
+        recall.value === "Babar" &&
+
+        search.length === 1 &&
+
+        memoryStatus.connected === true &&
+
+        finalStatus
+          .conversation_memory_connected === true;
+
+
+      if (!passed) {
+
+        throw new Error(
+          "Babar Core + Conversation Memory integration failed."
+        );
+
+      }
+
+
+      /*
+       * Show result
+       */
+
+      output.textContent =
+
+        "✅ PASS\n\n" +
+
+        JSON.stringify(
+
+          {
+
+            core_status:
+              finalStatus,
+
+            conversation_status:
+              conversationStatus,
+
+            user_message:
+              userMessage,
+
+            assistant_message:
+              assistantMessage,
+
+            system_message:
+              systemMessage,
+
+            conversation:
+              conversation,
+
+            remembered:
+              remember,
+
+            recalled:
+              recall,
+
+            search:
+              search,
+
+            memory_status:
+              memoryStatus
+
+          },
+
+          null,
+
+          2
+
+        );
+
+
+    }
+
+    catch (error) {
+
+      output.textContent =
+
+        "❌ ERROR\n\n" +
+
+        error.message;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
