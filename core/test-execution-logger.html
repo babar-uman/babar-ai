@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Execution Logger Test</title>
+</head>
+
+<body>
+
+  <h1>Execution Logger Test</h1>
+
+  <pre id="result">Testing...</pre>
+
+
+  <script src="execution-logger.js"></script>
+  <script src="command-executor.js"></script>
+
+
+  <script>
+
+    const output =
+      document.getElementById("result");
+
+
+    try {
+
+      // Fake router for testing
+      const router = {
+
+        async route(command, confirmed) {
+
+          if (!confirmed) {
+
+            return {
+
+              success: false,
+
+              permission_required: true,
+
+              message:
+                "Permission request required."
+
+            };
+
+          }
+
+
+          return {
+
+            success: true,
+
+            message:
+              "Command executed successfully."
+
+          };
+
+        }
+
+      };
+
+
+      // Create logger
+      const logger =
+        new ExecutionLogger();
+
+
+      // Create executor with logger
+      const executor =
+        new CommandExecutor(
+          router,
+          logger
+        );
+
+
+      // Test command
+      const command = {
+
+        id: "test-command-001",
+
+        type: "system",
+
+        action: "test",
+
+        target: "logger",
+
+        parameters: {}
+
+      };
+
+
+      // First execution: blocked
+      const blocked =
+        await executor.execute(
+          command,
+          false
+        );
+
+
+      // Second execution: successful
+      const successful =
+        await executor.execute(
+          command,
+          true
+        );
+
+
+      const logs =
+        logger.getLogs();
+
+
+      const status =
+        logger.getStatus();
+
+
+      const passed =
+        logs.length === 2 &&
+        status.total_logs === 2 &&
+        blocked.success === false &&
+        successful.success === true;
+
+
+      output.textContent =
+        JSON.stringify(
+
+          {
+
+            status:
+              passed
+                ? "PASS"
+                : "FAIL",
+
+            logger: status,
+
+            blocked: blocked,
+
+            successful: successful,
+
+            logs: logs
+
+          },
+
+          null,
+
+          2
+
+        );
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+
+          {
+
+            status: "FAIL",
+
+            error:
+              error.message
+
+          },
+
+          null,
+
+          2
+
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
