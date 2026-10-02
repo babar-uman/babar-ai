@@ -140,6 +140,7 @@ function initializeBabarAI() {
 
 
     babarCore = null;
+    commandExecutor = null;
 
     return false;
 
@@ -377,7 +378,7 @@ function startVoice() {
 
 
 // ========================================
-// Generate / Create Command
+// Generate / Execute Command
 // ========================================
 
 async function generateIdea() {
@@ -403,8 +404,11 @@ async function generateIdea() {
   }
 
 
-  // Make sure Babar AI is initialized.
-  if (!babarCore) {
+  // ------------------------------------
+  // Make sure Babar AI is initialized
+  // ------------------------------------
+
+  if (!babarCore || !commandExecutor) {
 
     const initialized =
       initializeBabarAI();
@@ -424,7 +428,7 @@ async function generateIdea() {
 
 
   output.innerText =
-    "Babar AI is processing your request...";
+    "Babar AI is preparing your command...";
 
 
   try {
@@ -453,7 +457,7 @@ async function generateIdea() {
 
 
     // ------------------------------------
-    // Create proper Babar AI command
+    // Create Babar AI command
     // ------------------------------------
 
     const command =
@@ -468,12 +472,87 @@ async function generateIdea() {
       );
 
 
+    console.log(
+      "Babar AI Command:",
+      command
+    );
+
+
     // ------------------------------------
-    // Show command information
+    // Execute command
+    // ------------------------------------
+
+    const executionResult =
+      await commandExecutor.execute(
+        command,
+        false
+      );
+
+
+    console.log(
+      "Babar AI Execution Result:",
+      executionResult
+    );
+
+
+    // ------------------------------------
+    // Permission required
+    // ------------------------------------
+
+    if (
+      executionResult &&
+      executionResult.result &&
+      executionResult.result.permission_required
+    ) {
+
+      output.innerText =
+        "🔐 Permission required.\n\n" +
+
+        "Babar AI wants to execute:\n" +
+        command.type +
+        "." +
+        command.action +
+        "\n\n" +
+
+        "Press Generate again to confirm this command.";
+
+      return;
+
+    }
+
+
+    // ------------------------------------
+    // Execution failed
+    // ------------------------------------
+
+    if (
+      !executionResult ||
+      executionResult.success !== true
+    ) {
+
+      const message =
+        executionResult &&
+        executionResult.result &&
+        executionResult.result.message
+          ? executionResult.result.message
+          : "Command execution failed.";
+
+
+      output.innerText =
+        "❌ Command failed.\n\n" +
+        message;
+
+      return;
+
+    }
+
+
+    // ------------------------------------
+    // Successful execution
     // ------------------------------------
 
     output.innerText =
-      "✅ Babar AI received your request.\n\n" +
+      "✅ Babar AI command executed.\n\n" +
 
       "Command:\n" +
       prompt +
@@ -483,9 +562,16 @@ async function generateIdea() {
       command.id;
 
 
-    console.log(
-      "Babar AI Command:",
-      command
+    // ------------------------------------
+    // Save assistant response
+    // ------------------------------------
+
+    babarCore.addAssistantMessage(
+      "Command executed successfully.",
+      {
+        command_id:
+          command.id
+      }
     );
 
 
