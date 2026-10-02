@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Memory Manager Error Test</title>
+</head>
+
+<body>
+
+  <h1>Memory Manager Error Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script>
+
+    window.addEventListener(
+      "error",
+      function (event) {
+
+        document.getElementById(
+          "output"
+        ).textContent =
+          "❌ JavaScript Error\n\n" +
+          "Message: " +
+          event.message +
+          "\n\nFile: " +
+          event.filename +
+          "\n\nLine: " +
+          event.lineno +
+          "\n\nColumn: " +
+          event.colno;
+
+      }
+    );
+
+  </script>
+
+
+  <script src="memory-manager.js"></script>
+
+
+  <script>
+
+    if (
+      typeof MemoryManager ===
+      "function"
+    ) {
+
+      document.getElementById(
+        "output"
+      ).textContent =
+        "✅ PASS\n\n" +
+        "MemoryManager loaded successfully.";
+
+    }
+
+  </script>
+
+</body>
+
+</html>
