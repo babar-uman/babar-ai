@@ -207,6 +207,30 @@ function initializeBabarAI() {
     );
 
 
+    // ------------------------------------
+    // Show exact initialization error
+    // ------------------------------------
+
+    const output =
+      document.getElementById("output");
+
+
+    if (output) {
+
+      output.innerText =
+        "❌ Babar AI initialization error:\n\n" +
+
+        "Error Type:\n" +
+        error.name +
+
+        "\n\n" +
+
+        "Error Message:\n" +
+        error.message;
+
+    }
+
+
     babarCore = null;
     commandRouter = null;
     commandExecutor = null;
@@ -247,9 +271,20 @@ document.addEventListener(
 
     } else {
 
-      output.innerText =
-        "⚠️ Babar AI could not initialize.\n\n" +
-        "Please check the Core files.";
+      // The exact error is already displayed
+      // by initializeBabarAI().
+
+      if (
+        !output.innerText ||
+        output.innerText ===
+          "Your result will appear here..."
+      ) {
+
+        output.innerText =
+          "⚠️ Babar AI could not initialize.\n\n" +
+          "Please check the Core files.";
+
+      }
 
     }
 
@@ -520,10 +555,6 @@ async function generateIdea() {
 
 
     if (!initialized) {
-
-      output.innerText =
-        "❌ Babar AI could not initialize.\n\n" +
-        "Please check the Core files.";
 
       return;
 
