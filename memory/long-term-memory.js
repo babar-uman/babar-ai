@@ -1,62 +1,158 @@
 class LongTermMemory {
 
-  constructor(storageKey = "babar-ai-memory") {
+  constructor(options = {}) {
 
     this.storageKey =
-      storageKey;
+      options.storageKey || "babar_ai_long_term_memory";
 
-    this.memories =
-      this.load();
+    this.storage =
+      options.storage ||
+      (typeof localStorage !== "undefined"
+        ? localStorage
+        : null);
+
+    this.memories = new Map();
+
+    this.load();
 
   }
 
 
-  add(
-    key,
-    value,
-    category = "general",
-    metadata = {}
-  ) {
+  generateId() {
 
-    if (!key || value === undefined) {
+    return (
+      Date.now().toString(36) +
+      "-" +
+      Math.random().toString(36).substring(2, 10)
+    );
 
-      throw new Error(
-        "Memory key and value are required."
+  }
+
+
+  load() {
+
+    if (!this.storage) {
+      return;
+    }
+
+    try {
+
+      const saved =
+        this.storage.getItem(this.storageKey);
+
+      if (!saved) {
+        return;
+      }
+
+      const data =
+        JSON.parse(saved);
+
+      if (!Array.isArray(data)) {
+        return;
+      }
+
+      this.memories.clear();
+
+      for (const memory of data) {
+
+        if (
+          memory &&
+          memory.id &&
+          memory.key
+        ) {
+
+          this.memories.set(
+            memory.key,
+            memory
+          );
+
+        }
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Failed to load long-term memory:",
+        error
       );
 
     }
 
+  }
+
+
+  save() {
+
+    if (!this.storage) {
+      return;
+    }
+
+    try {
+
+      const data =
+        Array.from(this.memories.values());
+
+      this.storage.setItem(
+        this.storageKey,
+        JSON.stringify(data)
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Failed to save long-term memory:",
+        error
+      );
+
+    }
+
+  }
+
+
+  add(key, value, category = "general", metadata = {}) {
+
+    if (!key) {
+
+      return {
+        success: false,
+        message: "Memory key is required."
+      };
+
+    }
+
+    if (this.memories.has(key)) {
+
+      return {
+        success: false,
+        message: `Memory already exists: ${key}`
+      };
+
+    }
 
     const memory = {
 
-      id:
-        this.generateId(),
+      id: this.generateId(),
 
-      key:
-        key,
+      key: key,
 
-      value:
-        value,
+      value: value,
 
-      category:
-        category,
+      category: category,
 
-      metadata:
-        metadata,
+      metadata: metadata,
 
-      created_at:
-        new Date().toISOString(),
+      created_at: new Date().toISOString(),
 
-      updated_at:
-        new Date().toISOString()
+      updated_at: new Date().toISOString()
 
     };
 
 
-    this.memories.push(
+    this.memories.set(
+      key,
       memory
     );
-
 
     this.save();
 
@@ -65,28 +161,17 @@ class LongTermMemory {
 
       success: true,
 
-      message:
-        "Long-term memory saved.",
-
-      memory:
-        memory
+      memory: memory
 
     };
 
   }
 
 
-  update(
-    key,
-    value,
-    metadata = {}
-  ) {
+  update(key, value, category, metadata) {
 
     const memory =
-      this.memories.find(
-        item =>
-          item.key === key
-      );
+      this.memories.get(key);
 
 
     if (!memory) {
@@ -96,24 +181,48 @@ class LongTermMemory {
         success: false,
 
         message:
-          "Memory not found."
+          `Memory not found: ${key}`
 
       };
 
     }
 
 
-    memory.value =
-      value;
+    memory.value = value;
 
 
-    memory.metadata =
-      metadata;
+    // Category is now updated when provided.
+    if (
+      category !== undefined &&
+      category !== null
+    ) {
+
+      memory.category =
+        category;
+
+    }
+
+
+    // Metadata is updated when provided.
+    if (
+      metadata !== undefined &&
+      metadata !== null
+    ) {
+
+      memory.metadata =
+        metadata;
+
+    }
 
 
     memory.updated_at =
       new Date().toISOString();
 
+
+    this.memories.set(
+      key,
+      memory
+    );
 
     this.save();
 
@@ -122,11 +231,7 @@ class LongTermMemory {
 
       success: true,
 
-      message:
-        "Long-term memory updated.",
-
-      memory:
-        memory
+      memory: memory
 
     };
 
@@ -140,18 +245,12 @@ class LongTermMemory {
     metadata = {}
   ) {
 
-    const existing =
-      this.memories.find(
-        item =>
-          item.key === key
-      );
-
-
-    if (existing) {
+    if (this.memories.has(key)) {
 
       return this.update(
         key,
         value,
+        category,
         metadata
       );
 
@@ -170,39 +269,33 @@ class LongTermMemory {
 
   get(key) {
 
-    const memory =
-      this.memories.find(
-        item =>
-          item.key === key
-      );
-
-
-    return memory || null;
+    return (
+      this.memories.get(key) ||
+      null
+    );
 
   }
 
 
   has(key) {
 
-    return (
-      this.get(key) !== null
-    );
+    return this.memories.has(key);
 
   }
 
 
   getAll() {
 
-    return [
-      ...this.memories
-    ];
+    return Array.from(
+      this.memories.values()
+    );
 
   }
 
 
   getByCategory(category) {
 
-    return this.memories.filter(
+    return this.getAll().filter(
       memory =>
         memory.category === category
     );
@@ -223,35 +316,26 @@ class LongTermMemory {
       String(query).toLowerCase();
 
 
-    return this.memories.filter(
+    return this.getAll().filter(
       memory => {
 
         const key =
-          String(
-            memory.key
-          ).toLowerCase();
-
+          String(memory.key || "")
+            .toLowerCase();
 
         const value =
-          String(
-            memory.value
-          ).toLowerCase();
-
+          String(memory.value || "")
+            .toLowerCase();
 
         const category =
-          String(
-            memory.category
-          ).toLowerCase();
+          String(memory.category || "")
+            .toLowerCase();
 
 
         return (
-
           key.includes(searchText) ||
-
           value.includes(searchText) ||
-
           category.includes(searchText)
-
         );
 
       }
@@ -262,32 +346,21 @@ class LongTermMemory {
 
   remove(key) {
 
-    const index =
-      this.memories.findIndex(
-        memory =>
-          memory.key === key
-      );
-
-
-    if (index === -1) {
+    if (!this.memories.has(key)) {
 
       return {
 
         success: false,
 
         message:
-          "Memory not found."
+          `Memory not found: ${key}`
 
       };
 
     }
 
 
-    this.memories.splice(
-      index,
-      1
-    );
-
+    this.memories.delete(key);
 
     this.save();
 
@@ -297,7 +370,7 @@ class LongTermMemory {
       success: true,
 
       message:
-        "Long-term memory removed."
+        `Memory removed: ${key}`
 
     };
 
@@ -306,7 +379,7 @@ class LongTermMemory {
 
   clear() {
 
-    this.memories = [];
+    this.memories.clear();
 
     this.save();
 
@@ -323,140 +396,21 @@ class LongTermMemory {
   }
 
 
-  count() {
-
-    return this.memories.length;
-
-  }
-
-
   getStatus() {
 
     return {
 
-      storage_key:
-        this.storageKey,
+      enabled: true,
 
-      total_memories:
-        this.memories.length,
+      count:
+        this.memories.size,
 
-      persistent:
-        this.isPersistentStorageAvailable()
+      storage:
+        this.storage
+          ? "localStorage"
+          : "memory-only"
 
     };
-
-  }
-
-
-  isPersistentStorageAvailable() {
-
-    return (
-      typeof localStorage !==
-      "undefined"
-    );
-
-  }
-
-
-  save() {
-
-    if (
-      !this.isPersistentStorageAvailable()
-    ) {
-
-      return false;
-
-    }
-
-
-    try {
-
-      localStorage.setItem(
-
-        this.storageKey,
-
-        JSON.stringify(
-          this.memories
-        )
-
-      );
-
-
-      return true;
-
-    }
-
-    catch (error) {
-
-      return false;
-
-    }
-
-  }
-
-
-  load() {
-
-    if (
-      !this.isPersistentStorageAvailable()
-    ) {
-
-      return [];
-
-    }
-
-
-    try {
-
-      const stored =
-        localStorage.getItem(
-          this.storageKey
-        );
-
-
-      if (!stored) {
-
-        return [];
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          stored
-        );
-
-
-      return Array.isArray(parsed)
-        ? parsed
-        : [];
-
-    }
-
-    catch (error) {
-
-      return [];
-
-    }
-
-  }
-
-
-  generateId() {
-
-    return (
-
-      "long-memory-" +
-
-      Date.now().toString(36) +
-
-      "-" +
-
-      Math.random()
-        .toString(36)
-        .substring(2, 8)
-
-    );
 
   }
 
@@ -473,9 +427,12 @@ if (typeof window !== "undefined") {
 
 
 // Node.js version
-if (typeof module !== "undefined" && module.exports) {
+if (
+  typeof module !== "undefined" &&
+  module.exports
+) {
 
   module.exports =
     LongTermMemory;
 
-        }
+}
