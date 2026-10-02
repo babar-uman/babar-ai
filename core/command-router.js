@@ -1,6 +1,7 @@
 class CommandRouter {
-  constructor(core) {
+  constructor(core, skillManager = null) {
     this.core = core;
+    this.skillManager = skillManager;
     this.routes = new Map();
   }
 
@@ -17,6 +18,15 @@ class CommandRouter {
     };
   }
 
+  setSkillManager(skillManager) {
+    this.skillManager = skillManager;
+
+    return {
+      success: true,
+      message: "Skill Manager connected."
+    };
+  }
+
   async route(command) {
     if (!command || !command.type) {
       return {
@@ -25,6 +35,12 @@ class CommandRouter {
       };
     }
 
+    // Skill commands
+    if (command.type === "skill") {
+      return await this.routeSkill(command);
+    }
+
+    // Registered routes
     const handler = this.routes.get(command.type);
 
     if (!handler) {
@@ -43,6 +59,7 @@ class CommandRouter {
         message: "Command routed successfully.",
         data: result
       };
+
     } catch (error) {
       return {
         success: false,
@@ -52,10 +69,49 @@ class CommandRouter {
     }
   }
 
+  async routeSkill(command) {
+    if (!this.skillManager) {
+      return {
+        success: false,
+        message: "Skill Manager is not connected."
+      };
+    }
+
+    const skillName =
+      command.target ||
+      command.parameters?.skill ||
+      "";
+
+    if (!skillName) {
+      return {
+        success: false,
+        message: "No skill specified."
+      };
+    }
+
+    return await this.skillManager.execute(
+      skillName,
+      command
+    );
+  }
+
   getRoutes() {
     return Array.from(this.routes.keys());
   }
+
+  getStatus() {
+    return {
+      routes: this.getRoutes(),
+      skillManagerConnected: this.skillManager !== null
+    };
+  }
 }
+
+
+if (typeof window !== "undefined") {
+  window.CommandRouter = CommandRouter;
+}
+
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = CommandRouter;
