@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Manager Load Test</title>
+</head>
+
+<body>
+
+  <h1>Skill Manager Load Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+  <script src="./skill-manager.js"></script>
+
+  <script>
+
+    const output = document.getElementById("output");
+
+    if (typeof SkillManager === "undefined") {
+
+      output.textContent =
+        "❌ SkillManager is NOT loaded.\n\n" +
+        "The browser cannot find or execute skill-manager.js.";
+
+    } else {
+
+      output.textContent =
+        "✅ SkillManager loaded successfully.\n\n" +
+        "Class: " + typeof SkillManager;
+
+    }
+
+  </script>
+
+</body>
+</html>
