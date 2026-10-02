@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Router Permission Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Router + Permission Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="./babar-core.js"></script>
+  <script src="./permission-manager.js"></script>
+  <script src="./command-router.js"></script>
+  <script src="../skills/skill-manager.js"></script>
+
+
+  <script>
+
+    const output =
+      document.getElementById("output");
+
+
+    try {
+
+      // Create Core
+      const core =
+        new BabarCore({
+          name: "Babar AI",
+          version: "0.1.0"
+        });
+
+
+      // Create Permission Manager
+      const permissionManager =
+        new PermissionManager();
+
+
+      // Demo skill requires permission
+      permissionManager.setPermission(
+        "skill.demo",
+        "ask"
+      );
+
+
+      // Create Skill Manager
+      const skillManager =
+        new SkillManager();
+
+
+      // Register demo skill
+      skillManager.register(
+        "demo",
+        {
+
+          version: "1.0.0",
+
+          description:
+            "Demo skill for Router permission testing.",
+
+          category:
+            "test",
+
+          permissions:
+            [],
+
+          execute:
+            async (command) => {
+
+              return {
+
+                message:
+                  "Demo skill executed successfully.",
+
+                received:
+                  command.parameters
+
+              };
+
+            }
+
+        }
+      );
+
+
+      // Create Router
+      const router =
+        new CommandRouter(
+          core,
+          skillManager,
+          permissionManager
+        );
+
+
+      // Create command
+      const command =
+        core.createCommand(
+          "skill",
+          "execute",
+          "demo",
+          {
+            message:
+              "Hello from Babar AI"
+          }
+        );
+
+
+      // First attempt WITHOUT confirmation
+      router.route(
+        command,
+        false
+      ).then(
+        (withoutConfirmation) => {
+
+
+          // Second attempt WITH confirmation
+          router.route(
+            command,
+            true
+          ).then(
+            (withConfirmation) => {
+
+
+              output.textContent =
+                JSON.stringify(
+                  {
+
+                    status:
+                      "PASS",
+
+                    router:
+                      router.getStatus(),
+
+                    without_confirmation:
+                      withoutConfirmation,
+
+                    with_confirmation:
+                      withConfirmation
+
+                  },
+                  null,
+                  2
+                );
+
+            }
+          );
+
+        }
+      );
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+          {
+
+            status:
+              "FAIL",
+
+            error:
+              error.message
+
+          },
+          null,
+          2
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
