@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Short-Term Memory Test</title>
+
+</head>
+
+
+<body>
+
+  <h1>Short-Term Memory Test</h1>
+
+  <pre id="result">Testing...</pre>
+
+
+  <script>
+
+    const result =
+      document.getElementById("result");
+
+
+    const memoryScript =
+      document.createElement("script");
+
+
+    memoryScript.src =
+      "./short-term-memory.js?v=" +
+      Date.now();
+
+
+    memoryScript.onload =
+      function () {
+
+
+        try {
+
+
+          if (
+            typeof window.ShortTermMemory !==
+            "function"
+          ) {
+
+            throw new Error(
+              "ShortTermMemory is not available."
+            );
+
+          }
+
+
+          // Create memory
+          const memory =
+            new window.ShortTermMemory(
+              5
+            );
+
+
+          // Add messages
+          const userMessage =
+            memory.addUserMessage(
+              "Hello Babar AI"
+            );
+
+
+          const assistantMessage =
+            memory.addAssistantMessage(
+              "Hello! How can I help you?"
+            );
+
+
+          const systemMessage =
+            memory.addSystemMessage(
+              "Conversation started."
+            );
+
+
+          // Read memory
+          const all =
+            memory.getAll();
+
+
+          const recent =
+            memory.getRecent(2);
+
+
+          const last =
+            memory.getLast();
+
+
+          const userMessages =
+            memory.getByRole(
+              "user"
+            );
+
+
+          const assistantMessages =
+            memory.getByRole(
+              "assistant"
+            );
+
+
+          const status =
+            memory.getStatus();
+
+
+          const passed =
+
+            userMessage.success === true &&
+
+            assistantMessage.success === true &&
+
+            systemMessage.success === true &&
+
+            all.length === 3 &&
+
+            recent.length === 2 &&
+
+            last.role === "system" &&
+
+            userMessages.length === 1 &&
+
+            assistantMessages.length === 1 &&
+
+            status.total_messages === 3;
+
+
+          result.textContent =
+            JSON.stringify(
+
+              {
+
+                status:
+                  passed
+                    ? "PASS"
+                    : "FAIL",
+
+                memory_status:
+                  status,
+
+                all_messages:
+                  all,
+
+                recent_messages:
+                  recent,
+
+                last_message:
+                  last,
+
+                user_messages:
+                  userMessages,
+
+                assistant_messages:
+                  assistantMessages
+
+              },
+
+              null,
+
+              2
+
+            );
+
+
+        }
+
+
+        catch (error) {
+
+          result.textContent =
+
+            "FAIL\n\n" +
+            error.message;
+
+        }
+
+      };
+
+
+    memoryScript.onerror =
+      function () {
+
+        result.textContent =
+          "FAIL\n\n" +
+          "short-term-memory.js could not be loaded.";
+
+      };
+
+
+    document.head.appendChild(
+      memoryScript
+    );
+
+  </script>
+
+</body>
+
+</html>
