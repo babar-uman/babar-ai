@@ -8,5 +8,7 @@ function generateIdea() {
   }
 
   output.innerText =
-    "Your project idea:\n\n" + prompt;
+    "Babar AI is processing your request...\n\n" +
+    "Your command:\n" +
+    prompt;
 }
