@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Integration Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Integration Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="./babar-core.js"></script>
+  <script src="./command-router.js"></script>
+  <script src="../skills/skill-manager.js"></script>
+
+
+  <script>
+
+    const output = document.getElementById("output");
+
+
+    try {
+
+      // 1. Create Core
+      const core = new BabarCore({
+        name: "Babar AI",
+        version: "0.1.0"
+      });
+
+
+      // 2. Create Skill Manager
+      const skillManager = new SkillManager();
+
+
+      // 3. Register a test skill
+      skillManager.register("demo", {
+
+        name: "Demo Skill",
+
+        execute: async (command) => {
+
+          return {
+            message: "Demo skill executed successfully.",
+            received: command.parameters
+          };
+
+        }
+
+      });
+
+
+      // 4. Create Router
+      const router = new CommandRouter(
+        core,
+        skillManager
+      );
+
+
+      // 5. Create Skill Command
+      const command = core.createCommand(
+        "skill",
+        "execute",
+        "demo",
+        {
+          message: "Hello from Babar AI"
+        }
+      );
+
+
+      // 6. Send command through Router
+      router.route(command).then((result) => {
+
+        output.textContent =
+          JSON.stringify(
+            {
+              status: "PASS",
+              core: core.getStatus(),
+              router: router.getStatus(),
+              skills: skillManager.list(),
+              command: command,
+              result: result
+            },
+            null,
+            2
+          );
+
+      });
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+          {
+            status: "FAIL",
+            error: error.message
+          },
+          null,
+          2
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
