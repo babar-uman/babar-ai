@@ -1,6 +1,10 @@
 class BabarCore {
 
-  constructor(config = {}, memoryManager = null) {
+  constructor(
+    config = {},
+    memoryManager = null,
+    conversationMemory = null
+  ) {
 
     this.name =
       config.name || "Babar AI";
@@ -11,20 +15,33 @@ class BabarCore {
 
     this.language =
       config.language || {
+
         default: "en",
-        supported: ["en", "ur"],
+
+        supported: [
+          "en",
+          "ur"
+        ],
+
         auto_detect: true
+
       };
 
 
     this.memory =
       config.memory || {
+
         enabled: true
+
       };
 
 
     this.memoryManager =
       memoryManager;
+
+
+    this.conversationMemory =
+      conversationMemory;
 
 
     this.skills =
@@ -55,7 +72,30 @@ class BabarCore {
   }
 
 
-  registerSkill(name, skill) {
+  setConversationMemory(
+    conversationMemory
+  ) {
+
+    this.conversationMemory =
+      conversationMemory;
+
+
+    return {
+
+      success: true,
+
+      message:
+        "Conversation Memory connected."
+
+    };
+
+  }
+
+
+  registerSkill(
+    name,
+    skill
+  ) {
 
     if (!name || !skill) {
 
@@ -84,7 +124,10 @@ class BabarCore {
   }
 
 
-  registerAgent(name, agent) {
+  registerAgent(
+    name,
+    agent
+  ) {
 
     if (!name || !agent) {
 
@@ -154,7 +197,9 @@ class BabarCore {
   }
 
 
-  async executeCommand(command) {
+  async executeCommand(
+    command
+  ) {
 
     if (!command || !command.type) {
 
@@ -273,6 +318,17 @@ class BabarCore {
     metadata = {}
   ) {
 
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .recordUserMessage(
+          content,
+          metadata
+        );
+
+    }
+
+
     if (!this.memoryManager) {
 
       return {
@@ -300,6 +356,17 @@ class BabarCore {
     metadata = {}
   ) {
 
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .recordAssistantMessage(
+          content,
+          metadata
+        );
+
+    }
+
+
     if (!this.memoryManager) {
 
       return {
@@ -322,9 +389,76 @@ class BabarCore {
   }
 
 
+  addSystemMessage(
+    content,
+    metadata = {}
+  ) {
+
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .recordSystemMessage(
+          content,
+          metadata
+        );
+
+    }
+
+
+    if (!this.memoryManager) {
+
+      return {
+
+        success: false,
+
+        message:
+          "Memory Manager is not connected."
+
+      };
+
+    }
+
+
+    if (
+      this.memoryManager.shortTerm &&
+      typeof this.memoryManager.shortTerm
+        .addSystemMessage === "function"
+    ) {
+
+      return this.memoryManager.shortTerm
+        .addSystemMessage(
+          content,
+          metadata
+        );
+
+    }
+
+
+    return {
+
+      success: false,
+
+      message:
+        "System message storage is not available."
+
+    };
+
+  }
+
+
   getRecentConversation(
     limit = 10
   ) {
+
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .getRecentContext(
+          limit
+        );
+
+    }
+
 
     if (!this.memoryManager) {
 
@@ -333,8 +467,77 @@ class BabarCore {
     }
 
 
-    return this.memoryManager.getRecentConversation(
-      limit
+    return this.memoryManager
+      .getRecentConversation(
+        limit
+      );
+
+  }
+
+
+  rememberImportant(
+    key,
+    value,
+    category = "general",
+    metadata = {}
+  ) {
+
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .rememberImportant(
+          key,
+          value,
+          category,
+          metadata
+        );
+
+    }
+
+
+    return this.remember(
+      key,
+      value,
+      category,
+      metadata
+    );
+
+  }
+
+
+  recallImportant(key) {
+
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .recallImportant(
+          key
+        );
+
+    }
+
+
+    return this.recall(
+      key
+    );
+
+  }
+
+
+  searchImportant(query) {
+
+    if (this.conversationMemory) {
+
+      return this.conversationMemory
+        .searchImportant(
+          query
+        );
+
+    }
+
+
+    return this.searchMemory(
+      query
     );
 
   }
@@ -388,6 +591,31 @@ class BabarCore {
   }
 
 
+  getConversationMemoryStatus() {
+
+    if (!this.conversationMemory) {
+
+      return {
+
+        connected: false
+
+      };
+
+    }
+
+
+    return {
+
+      connected: true,
+
+      status:
+        this.conversationMemory.getStatus()
+
+    };
+
+  }
+
+
   generateId() {
 
     return (
@@ -430,7 +658,10 @@ class BabarCore {
         this.memory.enabled,
 
       memory_manager_connected:
-        this.memoryManager !== null
+        this.memoryManager !== null,
+
+      conversation_memory_connected:
+        this.conversationMemory !== null
 
     };
 
@@ -440,7 +671,9 @@ class BabarCore {
 
 
 // Browser / Web version
-if (typeof window !== "undefined") {
+if (
+  typeof window !== "undefined"
+) {
 
   window.BabarCore =
     BabarCore;
