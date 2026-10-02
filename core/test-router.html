@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Babar AI Router Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Command Router Test</h1>
+
+  <pre id="output">Loading...</pre>
+
+  <script src="babar-core.js"></script>
+  <script src="command-router.js"></script>
+
+  <script>
+
+    const core = new BabarCore({
+      name: "Babar AI",
+      version: "0.1.0"
+    });
+
+    const router = new CommandRouter(core);
+
+    router.register("chat", async (command) => {
+      return {
+        reply: "Hello from Babar AI Chat Skill.",
+        received: command.parameters
+      };
+    });
+
+    const command = core.createCommand(
+      "chat",
+      "message",
+      "chat",
+      {
+        message: "Hello Babar AI"
+      }
+    );
+
+    router.route(command).then((result) => {
+
+      document.getElementById("output").textContent =
+        JSON.stringify(
+          {
+            routes: router.getRoutes(),
+            result: result
+          },
+          null,
+          2
+        );
+
+    });
+
+  </script>
+
+</body>
+</html>
