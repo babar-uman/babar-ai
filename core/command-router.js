@@ -136,6 +136,15 @@ class CommandRouter {
         await handler(command);
 
 
+      // Preserve handler failures.
+      // Do not convert success:false into success:true.
+      if (result && result.success === false) {
+
+        return result;
+
+      }
+
+
       return {
 
         success: true,
