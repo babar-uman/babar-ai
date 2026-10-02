@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Executor Logger Integration Test</title>
+
+</head>
+
+
+<body>
+
+  <h1>Executor Logger Integration Test</h1>
+
+  <pre id="result">Testing...</pre>
+
+
+  <script>
+
+    const result =
+      document.getElementById("result");
+
+
+    const loggerScript =
+      document.createElement("script");
+
+
+    loggerScript.src =
+      "./execution-logger.js?v=" +
+      Date.now();
+
+
+    loggerScript.onload = function () {
+
+      const executorScript =
+        document.createElement("script");
+
+
+      executorScript.src =
+        "./command-executor.js?v=" +
+        Date.now();
+
+
+      executorScript.onload = async function () {
+
+        try {
+
+          if (
+            typeof window.ExecutionLogger !==
+            "function"
+          ) {
+
+            throw new Error(
+              "ExecutionLogger is not available."
+            );
+
+          }
+
+
+          if (
+            typeof window.CommandExecutor !==
+            "function"
+          ) {
+
+            throw new Error(
+              "CommandExecutor is not available."
+            );
+
+          }
+
+
+          // Test router
+          const router = {
+
+            async route(
+              command,
+              confirmed
+            ) {
+
+              if (!confirmed) {
+
+                return {
+
+                  success: false,
+
+                  permission_required: true,
+
+                  message:
+                    "Permission request required."
+
+                };
+
+              }
+
+
+              return {
+
+                success: true,
+
+                message:
+                  "Command executed successfully."
+
+              };
+
+            }
+
+          };
+
+
+          // Create logger
+          const logger =
+            new window.ExecutionLogger();
+
+
+          // Create executor
+          const executor =
+            new window.CommandExecutor(
+              router,
+              logger
+            );
+
+
+          // Test command
+          const command = {
+
+            id:
+              "integration-test-001",
+
+            type:
+              "system",
+
+            action:
+              "test",
+
+            target:
+              "executor-logger",
+
+            parameters: {}
+
+          };
+
+
+          // 1. Blocked execution
+          const blocked =
+            await executor.execute(
+              command,
+              false
+            );
+
+
+          // 2. Successful execution
+          const successful =
+            await executor.execute(
+              command,
+              true
+            );
+
+
+          // Get logs
+          const logs =
+            logger.getLogs();
+
+
+          const loggerStatus =
+            logger.getStatus();
+
+
+          const executorStatus =
+            executor.getStatus();
+
+
+          const passed =
+
+            blocked.success === false &&
+
+            blocked.result
+              .permission_required === true &&
+
+            successful.success === true &&
+
+            logs.length === 2 &&
+
+            loggerStatus.total_logs === 2 &&
+
+            executorStatus
+              .logger_connected === true;
+
+
+          result.textContent =
+            JSON.stringify(
+
+              {
+
+                status:
+                  passed
+                    ? "PASS"
+                    : "FAIL",
+
+                executor:
+                  executorStatus,
+
+                logger:
+                  loggerStatus,
+
+                blocked_execution:
+                  blocked,
+
+                successful_execution:
+                  successful,
+
+                logs:
+                  logs
+
+              },
+
+              null,
+
+              2
+
+            );
+
+
+        }
+
+        catch (error) {
+
+          result.textContent =
+
+            "FAIL\n\n" +
+            error.message;
+
+        }
+
+      };
+
+
+      executorScript.onerror =
+        function () {
+
+          result.textContent =
+            "FAIL\n\n" +
+            "command-executor.js could not be loaded.";
+
+        };
+
+
+      document.head.appendChild(
+        executorScript
+      );
+
+    };
+
+
+    loggerScript.onerror =
+      function () {
+
+        result.textContent =
+          "FAIL\n\n" +
+          "execution-logger.js could not be loaded.";
+
+      };
+
+
+    document.head.appendChild(
+      loggerScript
+    );
+
+  </script>
+
+</body>
+
+</html>
