@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Skill Registry Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Skill Registry Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="./skill-registry.js"></script>
+
+  <script>
+
+    const output = document.getElementById("output");
+
+    try {
+
+      const registry = new SkillRegistry();
+
+
+      // Register demo skill
+      registry.register({
+
+        name: "demo",
+
+        version: "1.0.0",
+
+        description: "Demo skill for testing Babar AI Skill Registry.",
+
+        category: "test",
+
+        permissions: [],
+
+        execute: async (command) => {
+
+          return {
+            message: "Demo skill executed."
+          };
+
+        }
+
+      });
+
+
+      output.textContent =
+        JSON.stringify(
+          {
+            status: "PASS",
+
+            registered_skills:
+              registry.getNames(),
+
+            skill_info:
+              registry.getInfo("demo"),
+
+            has_demo:
+              registry.has("demo"),
+
+            total_skills:
+              registry.list().length
+
+          },
+          null,
+          2
+        );
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+          {
+            status: "FAIL",
+            error: error.message
+          },
+          null,
+          2
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
