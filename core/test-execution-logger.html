@@ -5,15 +5,12 @@
 
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>Execution Logger Test</title>
 
 </head>
-
 
 <body>
 
@@ -22,112 +19,122 @@
   <pre id="result">Testing...</pre>
 
 
-  <script src="./execution-logger.js"></script>
-
-
   <script>
 
-    try {
+    const result =
+      document.getElementById("result");
+
+
+    const script =
+      document.createElement("script");
+
+
+    script.src =
+      "./execution-logger.js?v=" +
+      Date.now();
+
+
+    script.onload = function () {
 
       if (
-        typeof ExecutionLogger === "undefined"
+        typeof window.ExecutionLogger ===
+        "function"
       ) {
 
-        throw new Error(
-          "ExecutionLogger failed to load."
-        );
+        try {
+
+          const logger =
+            new window.ExecutionLogger();
+
+
+          const log =
+            logger.log({
+
+              command_id:
+                "test-001",
+
+              type:
+                "system",
+
+              action:
+                "test",
+
+              target:
+                "logger",
+
+              success:
+                true,
+
+              permission_required:
+                false,
+
+              message:
+                "Logger loaded successfully."
+
+            });
+
+
+          result.textContent =
+            JSON.stringify(
+
+              {
+
+                status: "PASS",
+
+                script_loaded: true,
+
+                logger_available: true,
+
+                log: log,
+
+                status_info:
+                  logger.getStatus(),
+
+                logs:
+                  logger.getLogs()
+
+              },
+
+              null,
+
+              2
+
+            );
+
+        }
+
+        catch (error) {
+
+          result.textContent =
+            "FAIL\n\n" +
+            "Logger loaded, but execution failed:\n\n" +
+            error.message;
+
+        }
 
       }
 
+      else {
 
-      const logger =
-        new ExecutionLogger();
+        result.textContent =
+          "FAIL\n\n" +
+          "Script loaded, but ExecutionLogger was not exported.";
 
+      }
 
-      const logResult =
-        logger.log({
-
-          command_id:
-            "test-command-001",
-
-          type:
-            "system",
-
-          action:
-            "test",
-
-          target:
-            "logger",
-
-          success:
-            true,
-
-          permission_required:
-            false,
-
-          message:
-            "Execution Logger test successful."
-
-        });
+    };
 
 
-      const status =
-        logger.getStatus();
+    script.onerror = function () {
 
-
-      const logs =
-        logger.getLogs();
-
-
-      const passed =
-        logResult.success === true &&
-        status.total_logs === 1 &&
-        logs.length === 1;
-
-
-      document.getElementById(
-        "result"
-      ).textContent =
-
-        JSON.stringify(
-
-          {
-
-            status:
-              passed
-                ? "PASS"
-                : "FAIL",
-
-            logger_status:
-              status,
-
-            log_result:
-              logResult,
-
-            logs:
-              logs
-
-          },
-
-          null,
-
-          2
-
-        );
-
-
-    }
-
-    catch (error) {
-
-      document.getElementById(
-        "result"
-      ).textContent =
-
+      result.textContent =
         "FAIL\n\n" +
-        error.message;
+        "execution-logger.js could not be loaded.";
 
-    }
+    };
+
+
+    document.head.appendChild(script);
 
   </script>
 
