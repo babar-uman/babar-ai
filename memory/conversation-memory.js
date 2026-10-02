@@ -167,11 +167,54 @@ class ConversationMemory {
     }
 
 
-    return this.memoryManager.addConversationMessage(
-      "system",
-      content,
-      metadata
-    );
+    /*
+      Use the connected Short-Term Memory
+      directly for system messages.
+
+      This keeps ConversationMemory
+      compatible with both old and new
+      Memory Manager versions.
+    */
+
+    if (
+      this.memoryManager.shortTerm &&
+      typeof this.memoryManager.shortTerm
+        .addSystemMessage === "function"
+    ) {
+
+      return this.memoryManager.shortTerm
+        .addSystemMessage(
+          content,
+          metadata
+        );
+
+    }
+
+
+    if (
+      this.memoryManager.shortTerm &&
+      typeof this.memoryManager.shortTerm
+        .add === "function"
+    ) {
+
+      return this.memoryManager.shortTerm
+        .add(
+          "system",
+          content,
+          metadata
+        );
+
+    }
+
+
+    return {
+
+      success: false,
+
+      message:
+        "Short-Term Memory does not support system messages."
+
+    };
 
   }
 
@@ -187,9 +230,10 @@ class ConversationMemory {
     }
 
 
-    return this.memoryManager.getRecentConversation(
-      limit
-    );
+    return this.memoryManager
+      .getRecentConversation(
+        limit
+      );
 
   }
 
@@ -299,4 +343,4 @@ if (
   module.exports =
     ConversationMemory;
 
-      }
+}
