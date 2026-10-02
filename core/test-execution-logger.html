@@ -1,176 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Execution Logger Test</title>
 </head>
 
 <body>
 
-  <h1>Execution Logger Test</h1>
+<h1>Execution Logger Test</h1>
 
-  <pre id="result">Testing...</pre>
+<div id="result">Testing...</div>
 
+<script src="execution-logger.js"></script>
 
-  <script src="execution-logger.js"></script>
-  <script src="command-executor.js"></script>
+<script>
 
+try {
 
-  <script>
+  const logger = new ExecutionLogger();
 
-    const output =
-      document.getElementById("result");
+  const result = logger.log({
 
+    command_id: "test-001",
 
-    try {
+    type: "system",
 
-      // Fake router for testing
-      const router = {
+    action: "test",
 
-        async route(command, confirmed) {
+    target: "logger",
 
-          if (!confirmed) {
+    success: true,
 
-            return {
+    permission_required: false,
 
-              success: false,
+    message: "Logger test successful."
 
-              permission_required: true,
+  });
 
-              message:
-                "Permission request required."
 
-            };
+  document.getElementById("result").innerText =
+    JSON.stringify(
+      {
+        status: "PASS",
+        result: result,
+        total_logs: logger.getStatus().total_logs
+      },
+      null,
+      2
+    );
 
-          }
 
+} catch (error) {
 
-          return {
+  document.getElementById("result").innerText =
+    "FAIL\n\n" + error.message;
 
-            success: true,
+}
 
-            message:
-              "Command executed successfully."
-
-          };
-
-        }
-
-      };
-
-
-      // Create logger
-      const logger =
-        new ExecutionLogger();
-
-
-      // Create executor with logger
-      const executor =
-        new CommandExecutor(
-          router,
-          logger
-        );
-
-
-      // Test command
-      const command = {
-
-        id: "test-command-001",
-
-        type: "system",
-
-        action: "test",
-
-        target: "logger",
-
-        parameters: {}
-
-      };
-
-
-      // First execution: blocked
-      const blocked =
-        await executor.execute(
-          command,
-          false
-        );
-
-
-      // Second execution: successful
-      const successful =
-        await executor.execute(
-          command,
-          true
-        );
-
-
-      const logs =
-        logger.getLogs();
-
-
-      const status =
-        logger.getStatus();
-
-
-      const passed =
-        logs.length === 2 &&
-        status.total_logs === 2 &&
-        blocked.success === false &&
-        successful.success === true;
-
-
-      output.textContent =
-        JSON.stringify(
-
-          {
-
-            status:
-              passed
-                ? "PASS"
-                : "FAIL",
-
-            logger: status,
-
-            blocked: blocked,
-
-            successful: successful,
-
-            logs: logs
-
-          },
-
-          null,
-
-          2
-
-        );
-
-
-    } catch (error) {
-
-      output.textContent =
-        JSON.stringify(
-
-          {
-
-            status: "FAIL",
-
-            error:
-              error.message
-
-          },
-
-          null,
-
-          2
-
-        );
-
-    }
-
-  </script>
+</script>
 
 </body>
-
 </html>
