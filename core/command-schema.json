@@ -1,0 +1,39 @@
+{
+  "name": "Babar AI Command Protocol",
+  "version": "1.0.0",
+  "description": "Standard command format used by Babar AI Core, Skills, PC Agent and Android Agent.",
+  "command": {
+    "id": "string",
+    "type": "string",
+    "action": "string",
+    "target": "string",
+    "parameters": {},
+    "requires_permission": true,
+    "priority": "normal",
+    "source": "web",
+    "timestamp": "ISO-8601"
+  },
+  "response": {
+    "success": true,
+    "message": "string",
+    "data": {},
+    "error": null
+  },
+  "command_types": [
+    "chat",
+    "voice",
+    "browser",
+    "file",
+    "pc",
+    "android",
+    "system",
+    "memory",
+    "skill",
+    "automation"
+  ],
+  "permission_levels": [
+    "none",
+    "ask",
+    "required"
+  ]
+}
