@@ -40,7 +40,7 @@ class ExecutionLogger {
         record.success === true,
 
       permission_required:
-        record.permission_required || false,
+        record.permission_required === true,
 
       error:
         record.error || null,
@@ -50,7 +50,10 @@ class ExecutionLogger {
 
       timestamp:
         record.timestamp ||
-        new Date().toISOString()
+        new Date().toISOString(),
+
+      duration_ms:
+        record.duration_ms || 0
 
     };
 
@@ -69,9 +72,11 @@ class ExecutionLogger {
 
       success: true,
 
-      message: "Execution logged successfully.",
+      message:
+        "Execution logged successfully.",
 
-      log: logEntry
+      log:
+        logEntry
 
     };
 
@@ -105,7 +110,7 @@ class ExecutionLogger {
         result?.success === true,
 
       permission_required:
-        result?.permission_required || false,
+        result?.permission_required === true,
 
       error:
         result?.error || null,
@@ -114,7 +119,10 @@ class ExecutionLogger {
         result?.message || null,
 
       timestamp:
-        new Date().toISOString()
+        new Date().toISOString(),
+
+      duration_ms:
+        result?.execution?.duration_ms || 0
 
     };
 
@@ -221,4 +229,30 @@ class ExecutionLogger {
 
       "-" +
 
-      Math.random
+      Math.random()
+        .toString(36)
+        .substring(2, 8)
+
+    );
+
+  }
+
+}
+
+
+// Browser / Web version
+if (typeof window !== "undefined") {
+
+  window.ExecutionLogger =
+    ExecutionLogger;
+
+}
+
+
+// Node.js version
+if (typeof module !== "undefined" && module.exports) {
+
+  module.exports =
+    ExecutionLogger;
+
+}
