@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Babar AI Permission Manager Test</title>
+</head>
+
+<body>
+
+  <h1>Babar AI Permission Manager Test</h1>
+
+  <pre id="output">Testing...</pre>
+
+
+  <script src="./permission-manager.js"></script>
+
+
+  <script>
+
+    const output = document.getElementById("output");
+
+
+    try {
+
+      const manager = new PermissionManager();
+
+
+      // No permission required
+      manager.setPermission(
+        "chat",
+        "none"
+      );
+
+
+      // Permission requested
+      manager.setPermission(
+        "browser.open",
+        "ask"
+      );
+
+
+      // Confirmation required
+      manager.setPermission(
+        "pc.shutdown",
+        "required"
+      );
+
+
+      const tests = {
+
+        chat_without_confirmation:
+          manager.canExecute(
+            "chat",
+            false
+          ),
+
+
+        browser_without_confirmation:
+          manager.canExecute(
+            "browser.open",
+            false
+          ),
+
+
+        browser_with_confirmation:
+          manager.canExecute(
+            "browser.open",
+            true
+          ),
+
+
+        shutdown_without_confirmation:
+          manager.canExecute(
+            "pc.shutdown",
+            false
+          ),
+
+
+        shutdown_with_confirmation:
+          manager.canExecute(
+            "pc.shutdown",
+            true
+          )
+
+      };
+
+
+      output.textContent =
+        JSON.stringify(
+          {
+
+            status: "PASS",
+
+            permissions:
+              manager.listPermissions(),
+
+            tests:
+              tests,
+
+            manager_status:
+              manager.getStatus()
+
+          },
+          null,
+          2
+        );
+
+
+    } catch (error) {
+
+      output.textContent =
+        JSON.stringify(
+          {
+            status: "FAIL",
+            error: error.message
+          },
+          null,
+          2
+        );
+
+    }
+
+  </script>
+
+</body>
+
+</html>
