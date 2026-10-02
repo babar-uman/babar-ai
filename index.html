@@ -2,30 +2,54 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#000000"
+  >
 
   <title>Babar AI</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
   <header>
+
     <h1>Babar AI</h1>
-    <div class="status">● Free</div>
+
+    <div class="status">
+      ● Free
+    </div>
+
   </header>
 
 
   <main class="container">
 
     <section class="hero">
-      <h2>What do you want to create?</h2>
+
+      <h2>
+        What do you want to create?
+      </h2>
 
       <p>
         Talk to Babar AI and start building your project.
       </p>
+
     </section>
 
 
@@ -33,20 +57,32 @@
 
       <textarea
         id="prompt"
-        placeholder="Describe what you want to create..."></textarea>
+        placeholder="Describe what you want to create..."
+        aria-label="Babar AI prompt"
+      ></textarea>
 
 
-      <button onclick="generateIdea()">
+      <button
+        type="button"
+        onclick="generateIdea()"
+      >
         Generate
       </button>
 
 
-      <button onclick="startVoice()">
+      <button
+        type="button"
+        onclick="startVoice()"
+      >
         🎙️ Voice
       </button>
 
 
-      <div id="output">
+      <div
+        id="output"
+        role="status"
+        aria-live="polite"
+      >
         Your result will appear here...
       </div>
 
@@ -54,6 +90,49 @@
 
   </main>
 
+
+  <!-- ========================================
+       Memory System
+       ======================================== -->
+
+  <script src="memory/short-term-memory.js"></script>
+
+  <script src="memory/long-term-memory.js"></script>
+
+  <script src="memory/memory-manager.js"></script>
+
+  <script src="memory/conversation-memory.js"></script>
+
+
+  <!-- ========================================
+       Skills System
+       ======================================== -->
+
+  <script src="skills/skill-registry.js"></script>
+
+  <script src="skills/skill-manager.js"></script>
+
+
+  <!-- ========================================
+       Core System
+       ======================================== -->
+
+  <script src="core/permission-manager.js"></script>
+
+  <script src="core/command-router.js"></script>
+
+  <script src="core/execution-logger.js"></script>
+
+  <script src="core/command-executor.js"></script>
+
+  <script src="core/activity-log.js"></script>
+
+  <script src="core/babar-core.js"></script>
+
+
+  <!-- ========================================
+       Main Application
+       ======================================== -->
 
   <script src="script.js"></script>
 
