@@ -103,6 +103,61 @@ function initializeBabarAI() {
 
 
     // ------------------------------------
+    // Conversation Route
+    // ------------------------------------
+
+    commandRouter.register(
+      "conversation",
+      async function (command) {
+
+        const prompt =
+          command &&
+          command.parameters &&
+          command.parameters.prompt
+            ? command.parameters.prompt
+            : "";
+
+
+        if (!prompt.trim()) {
+
+          return {
+
+            success: false,
+
+            message:
+              "Conversation prompt is empty."
+
+          };
+
+        }
+
+
+        return {
+
+          success: true,
+
+          type:
+            "conversation",
+
+          action:
+            command.action || "process",
+
+          message:
+            "Conversation command received by Babar AI.",
+
+          prompt:
+            prompt,
+
+          response:
+            "Your request has been received. Real AI processing will be connected in the backend stage."
+
+        };
+
+      }
+    );
+
+
+    // ------------------------------------
     // Execution Logger
     // ------------------------------------
 
@@ -136,6 +191,12 @@ function initializeBabarAI() {
     );
 
 
+    console.log(
+      "Registered routes:",
+      commandRouter.getRoutes()
+    );
+
+
     return true;
 
   } catch (error) {
@@ -147,6 +208,7 @@ function initializeBabarAI() {
 
 
     babarCore = null;
+    commandRouter = null;
     commandExecutor = null;
 
     return false;
@@ -550,8 +612,16 @@ async function generateIdea() {
       }
 
 
+      const response =
+        executionResult.result &&
+        executionResult.result.data &&
+        executionResult.result.data.response
+          ? executionResult.result.data.response
+          : "Command executed successfully.";
+
+
       babarCore.addAssistantMessage(
-        "Command executed successfully.",
+        response,
         {
           command_id:
             confirmedCommand.id
@@ -560,10 +630,9 @@ async function generateIdea() {
 
 
       output.innerText =
-        "✅ Babar AI command executed successfully.\n\n" +
+        "✅ Babar AI executed the command.\n\n" +
 
-        "Command:\n" +
-        pendingPrompt +
+        response +
         "\n\n" +
 
         "Command ID:\n" +
@@ -689,8 +758,16 @@ async function generateIdea() {
     // Successful execution
     // ------------------------------------
 
+    const response =
+      executionResult.result &&
+      executionResult.result.data &&
+      executionResult.result.data.response
+        ? executionResult.result.data.response
+        : "Command executed successfully.";
+
+
     babarCore.addAssistantMessage(
-      "Command executed successfully.",
+      response,
       {
         command_id:
           command.id
@@ -701,8 +778,7 @@ async function generateIdea() {
     output.innerText =
       "✅ Babar AI command executed successfully.\n\n" +
 
-      "Command:\n" +
-      prompt +
+      response +
       "\n\n" +
 
       "Command ID:\n" +
