@@ -1,406 +1,189 @@
-// ========================================
-// Babar AI Backend Server
-// ========================================
-
 const http = require("http");
 
+const HOST = process.env.HOST || "127.0.0.1";
+const PORT = Number(process.env.PORT) || 3000;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
-// ========================================
-// Configuration
-// ========================================
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
-const HOST =
-  process.env.HOST || "127.0.0.1";
+function sendJson(res, statusCode, data) {
+  const body = JSON.stringify(data);
 
-const PORT =
-  Number(process.env.PORT) || 3000;
+  res.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  });
 
-
-// ========================================
-// JSON Response Helper
-// ========================================
-
-function sendJson(
-  response,
-  statusCode,
-  data
-) {
-
-  const body =
-    JSON.stringify(data);
-
-
-  response.writeHead(
-    statusCode,
-    {
-      "Content-Type":
-        "application/json; charset=utf-8",
-
-      "Content-Length":
-        Buffer.byteLength(body)
-    }
-  );
-
-
-  response.end(body);
-
+  res.end(body);
 }
 
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
 
-// ========================================
-// Read Request Body
-// ========================================
+    req.on("data", chunk => {
+      body += chunk;
 
-function readRequestBody(request) {
+      if (body.length > 1024 * 1024) {
+        reject(new Error("Request body is too large."));
+        req.destroy();
+      }
+    });
 
-  return new Promise(
-    (resolve, reject) => {
+    req.on("end", () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (error) {
+        reject(new Error("Invalid JSON body."));
+      }
+    });
 
-      let body = "";
+    req.on("error", reject);
+  });
+}
 
+async function generateAIResponse(prompt) {
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is not configured.");
+  }
 
-      request.on(
-        "data",
-        chunk => {
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/` +
+    `${MODEL}:generateContent`;
 
-          body +=
-            chunk.toString();
-
-        }
-      );
-
-
-      request.on(
-        "end",
-        () => {
-
-          if (!body) {
-
-            resolve({});
-
-            return;
-
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [
+          {
+            text:
+              "You are Babar AI, a helpful personal AI assistant. " +
+              "Give clear, practical and accurate answers. " +
+              "When the user asks for coding help, provide complete " +
+              "working code when appropriate."
           }
-
-
-          try {
-
-            const data =
-              JSON.parse(body);
-
-
-            resolve(data);
-
-          } catch (error) {
-
-            reject(
-              new Error(
-                "Invalid JSON request body."
-              )
-            );
-
-          }
-
-        }
-      );
-
-
-      request.on(
-        "error",
-        reject
-      );
-
-    }
-  );
-
-}
-
-
-// ========================================
-// Health Check
-// ========================================
-
-function handleHealthCheck(
-  response
-) {
-
-  sendJson(
-    response,
-    200,
-    {
-      success: true,
-
-      service:
-        "Babar AI Backend",
-
-      status:
-        "online",
-
-      version:
-        "0.1.0"
-    }
-  );
-
-}
-
-
-// ========================================
-// AI Request Handler
-// ========================================
-
-async function handleAIRequest(
-  request,
-  response
-) {
-
-  try {
-
-    const body =
-      await readRequestBody(
-        request
-      );
-
-
-    const prompt =
-      typeof body.prompt === "string"
-        ? body.prompt.trim()
-        : "";
-
-
-    if (!prompt) {
-
-      sendJson(
-        response,
-        400,
+        ]
+      },
+      contents: [
         {
-          success: false,
-
-          message:
-            "Prompt is required."
+          role: "user",
+          parts: [
+            {
+              text: prompt
+            }
+          ]
         }
-      );
+      ]
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const message =
+      data?.error?.message ||
+      `Gemini API request failed with status ${response.status}.`;
+
+    throw new Error(message);
+  }
+
+  const text =
+    data?.candidates?.[0]?.content?.parts
+      ?.map(part => part.text || "")
+      .join("")
+      .trim();
+
+  if (!text) {
+    throw new Error("AI returned an empty response.");
+  }
+
+  return text;
+}
+
+const server = http.createServer(async (req, res) => {
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    });
+
+    res.end();
+    return;
+  }
+
+  if (req.method === "GET" && req.url === "/health") {
+    sendJson(res, 200, {
+      success: true,
+      service: "Babar AI Backend",
+      status: "online",
+      aiConfigured: Boolean(GEMINI_API_KEY),
+      model: MODEL
+    });
+
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/ai") {
+    try {
+      const body = await readBody(req);
+
+      const prompt =
+        typeof body.prompt === "string"
+          ? body.prompt.trim()
+          : "";
+
+      if (!prompt) {
+        sendJson(res, 400, {
+          success: false,
+          message: "Prompt is required."
+        });
+
+        return;
+      }
+
+      const response = await generateAIResponse(prompt);
+
+      sendJson(res, 200, {
+        success: true,
+        response,
+        model: MODEL
+      });
 
       return;
-
-    }
-
-
-    // ------------------------------------
-    // Temporary response
-    // ------------------------------------
-    // Real AI provider will be connected
-    // in the next backend step.
-
-    sendJson(
-      response,
-      200,
-      {
-        success: true,
-
-        message:
-          "AI request received.",
-
-        response:
-          "Babar AI received your request and is ready for AI processing.",
-
-        prompt:
-          prompt
-      }
-    );
-
-  } catch (error) {
-
-    console.error(
-      "AI request error:",
-      error
-    );
-
-
-    sendJson(
-      response,
-      500,
-      {
+    } catch (error) {
+      sendJson(res, 500, {
         success: false,
+        message: error.message || "AI request failed."
+      });
 
-        message:
-          "Backend could not process the request."
-      }
-    );
-
-  }
-
-}
-
-
-// ========================================
-// HTTP Server
-// ========================================
-
-const server =
-  http.createServer(
-    async (
-      request,
-      response
-    ) => {
-
-      // ----------------------------------
-      // CORS
-      // ----------------------------------
-
-      response.setHeader(
-        "Access-Control-Allow-Origin",
-        "*"
-      );
-
-      response.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS"
-      );
-
-      response.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type"
-      );
-
-
-      // ----------------------------------
-      // OPTIONS
-      // ----------------------------------
-
-      if (
-        request.method === "OPTIONS"
-      ) {
-
-        response.writeHead(
-          204
-        );
-
-        response.end();
-
-        return;
-
-      }
-
-
-      // ----------------------------------
-      // Health Check
-      // ----------------------------------
-
-      if (
-        request.method === "GET" &&
-        request.url === "/health"
-      ) {
-
-        handleHealthCheck(
-          response
-        );
-
-        return;
-
-      }
-
-
-      // ----------------------------------
-      // AI Endpoint
-      // ----------------------------------
-
-      if (
-        request.method === "POST" &&
-        request.url === "/api/ai"
-      ) {
-
-        await handleAIRequest(
-          request,
-          response
-        );
-
-        return;
-
-      }
-
-
-      // ----------------------------------
-      // Not Found
-      // ----------------------------------
-
-      sendJson(
-        response,
-        404,
-        {
-          success: false,
-
-          message:
-            "Endpoint not found."
-        }
-      );
-
+      return;
     }
-  );
-
-
-// ========================================
-// Start Server
-// ========================================
-
-server.listen(
-  PORT,
-  HOST,
-  () => {
-
-    console.log(
-      `Babar AI Backend running at http://${HOST}:${PORT}`
-    );
-
   }
-);
 
+  sendJson(res, 404, {
+    success: false,
+    message: "Route not found."
+  });
+});
 
-// ========================================
-// Server Error Handling
-// ========================================
+server.listen(PORT, HOST, () => {
+  console.log(`Babar AI backend running at http://${HOST}:${PORT}`);
+});
 
-server.on(
-  "error",
-  error => {
+process.on("SIGINT", () => {
+  console.log("\nShutting down Babar AI backend...");
+  server.close(() => process.exit(0));
+});
 
-    console.error(
-      "Babar AI Backend error:",
-      error
-    );
-
-  }
-);
-
-
-// ========================================
-// Graceful Shutdown
-// ========================================
-
-function shutdown() {
-
-  console.log(
-    "Shutting down Babar AI Backend..."
-  );
-
-
-  server.close(
-    () => {
-
-      process.exit(0);
-
-    }
-  );
-
-}
-
-
-process.on(
-  "SIGINT",
-  shutdown
-);
-
-
-process.on(
-  "SIGTERM",
-  shutdown
-);
+process.on("SIGTERM", () => {
+  console.log("\nShutting down Babar AI backend...");
+  server.close(() => process.exit(0));
+});
